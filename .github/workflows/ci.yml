@@ -1,0 +1,75 @@
+name: CI + auto-merge
+
+# токену сразу выдаём права пушить в репозиторий
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - 'backend/**'
+      - 'frontend/**'
+
+jobs:
+  backend:
+    if: ${{ startsWith(github.ref_name, 'backend/') }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  frontend:
+    if: ${{ startsWith(github.ref_name, 'frontend/') }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+  merge-to-main:
+    name: Merge branch → main
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]              # ждём, пока оба job'а зелёные (или skipped)
+    if: ${{ success() &&
+      github.ref_name != 'main' &&
+      (startsWith(github.ref_name, 'backend/') || startsWith(github.ref_name, 'frontend/')) }}
+    steps:
+      - uses: actions/checkout@v4           # по умолчанию вытягивает main
+        with:
+          ref: main
+
+      - name: Fast-forward main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin ${{ github.ref_name }} --depth=1
+          git merge --ff-only origin/${{ github.ref_name }}
+          git push origin HEAD:main
