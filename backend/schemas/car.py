@@ -1,54 +1,29 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List
-from enum import Enum
+from typing import Dict, List, Literal
+from datetime import datetime
 
-class DamageType(str, Enum):
-    SCRATCH = "scratch"
-    DENT = "dent"
-    CRACK = "crack"
-    OTHER = "other"
 
-class DamageSeverity(str, Enum):
-    LIGHT = "light"
-    MODERATE = "moderate"
-    SEVERE = "severe"
 
-class Coordinates(BaseModel):
-    x: float
-    y: float
-    width: float
-    height: float
 
-class Damage(BaseModel):
-    id: str
-    part: str
-    type: DamageType
-    severity: DamageSeverity
-    coordinates: Coordinates
+class SDefectDetail(BaseModel):
+    defect_type: str
+    severity: Literal["low", "medium", "high"]
+    description: str
 
-class AnalysisResponse(BaseModel):
-    analysisId: str
-    damages: List[Damage]
+class SCarPartAnalysis(BaseModel):
+    quality: int
+    metadata: List[str] = []
+    defects: List[str] = []
+    detailed: List[SDefectDetail] = []
 
-class RepairCostEstimateRequest(BaseModel):
-    analysisId: str
-    region: str
+class SAnalyseResult(BaseModel):
+    quality: int
+    car_parts: Dict[str, SCarPartAnalysis]
+    created_at: datetime
 
-class RepairItem(BaseModel):
-    damageId: str
-    part: str
-    work: str
-    cost: float
-
-class RepairCostEstimateResponse(BaseModel):
-    estimateId: str
-    region: str
-    currency: str = "RUB"
-    repairs: List[RepairItem]
-    totalCost: float
-
-class Error(BaseModel):
-    code: str
-    message: str
-    coordinates: str | None = None
-    model_config = ConfigDict(from_attributes=True)
+class SAnalyseResponse(BaseModel):
+    success: bool
+    details_analize: SAnalyseResult
+    
+class SCreateAnalyse(BaseModel):
+    vin: str
