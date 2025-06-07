@@ -29,58 +29,46 @@ class CarRepository:
     
     
     @classmethod
-    async def upload_images(cls, analyse_id: int, position: str, images: list) -> bool:
+    async def upload_images(cls, analyse_id: int, images_data: list[tuple[bytes, str, str]]) -> bool:
         cls._ensure_upload_dir_exists()
         
-        analyse_dir = os.path.join(cls.UPLOAD_DIR, str(analyse_id), str(position))
+        analyse_dir = os.path.join(cls.UPLOAD_DIR, str(analyse_id))
         os.makedirs(analyse_dir, exist_ok=True)
         
-        for i, image_data in enumerate(images, start=1):
-            file_path = os.path.join(analyse_dir, f"{i}.jpg")  # или .png в зависимости от формата
+        for image_data, position, filename in images_data:
+            # Создаем подпапку для позиции, если её нет
+            position_dir = os.path.join(analyse_dir, position)
+            os.makedirs(position_dir, exist_ok=True)
             
+            # Сохраняем файл с уникальным именем
+            file_path = os.path.join(position_dir, filename)
             with open(file_path, "wb") as f:
                 f.write(image_data)
         
-        # Здесь можно добавить логику сохранения информации в БД, если нужно
-        async with new_session() as session:
-            # Например, обновить запись анализа или создать записи о файлах
-            pass
-            
         return True
     
     
     @classmethod
     async def analyse(cls, analyse_id: int) -> SAnalyseResult:
-        # Заглушка с фиксированными тестовыми данными
+        # Тестовые данные, соответствующие ожидаемому формату
         car_parts = {
-            "windshield": {
-                "quality": 4,
-                "metadata": ["clean"],
-                "defects": ["crack"],
-                "detailed": [
-                    {
-                        "defect_type": "crack",
-                        "severity": "medium",
-                        "description": "Small crack in the lower left corner"
-                    }
-                ]
+            "additionalProp1": {
+                "quality": 0,
+                "metadata": [],
+                "defects": [],
+                "detailed": []
             },
-            "hood": {
-                "quality": 3,
-                "metadata": ["repainted"],
-                "defects": ["scratch", "dent"],
-                "detailed": [
-                    {
-                        "defect_type": "scratch",
-                        "severity": "low",
-                        "description": "Surface scratch 10cm long"
-                    },
-                    {
-                        "defect_type": "dent",
-                        "severity": "medium",
-                        "description": "Small dent near the edge"
-                    }
-                ]
+            "additionalProp2": {
+                "quality": 0,
+                "metadata": [],
+                "defects": [],
+                "detailed": []
+            },
+            "additionalProp3": {
+                "quality": 0,
+                "metadata": [],
+                "defects": [],
+                "detailed": []
             }
         }
         
@@ -93,7 +81,7 @@ class CarRepository:
                 raise ValueError("Analysis not found")
             
             return SAnalyseResult(
-                quality=5, #0-5
+                quality=0,  # 0-5
                 car_parts=car_parts,
                 created_at=analyse.created_at
             )
