@@ -72,10 +72,12 @@ class DefectType(str, PyEnum):
     CORROSION = "Corrosion"  # Коррозия
 
 
-class SeverityLevel(PyEnum):
-    LOW = "low"  # Низкий
-    MEDIUM = "medium"  # Средний
-    HIGH = "high"  # Высокий
+class SeverityLevel(int, PyEnum):
+    NONE = 0       # Нет повреждений
+    LOW = 1        # Незначительные повреждения
+    MEDIUM = 2     # Средние повреждения
+    HIGH = 3       # Серьезные повреждения
+    CRITICAL = 4   # Критические повреждения
 
 
 # =============================================

@@ -76,34 +76,3 @@ if __name__ == "__main__":
         reload=True,
         port=3000
     )
-
-
-'''
-#Первый маршрут - создать запись в анализы (analyze_id) возврат - analyze_id
-#Второй маршрут - загрузить пачку фоток и сохранить их в uploads с привязкой к analyze_id
-#Третий маршрут - аналитика. принимает analyze_id. возвращает details_analize = {
-quality: `0-5`, car_parts: {car_part_name: {
-    quality: `0-5`,
-    metadata: [],
-    defects: ["crack",...],
-    detailed: [
-    {
-        defect_type,
-        severity,
-        description
-    }
-]
-}}}
-#Получение данных: принимает картинку, возращает report = [
-    {
-        defect_type,
-        car_part,
-        severity,
-        уверенность
-    }
-]
-'''
-
-'''
-
-'''
