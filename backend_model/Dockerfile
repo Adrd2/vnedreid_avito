@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements first for better Docker layer caching
 COPY requirements.txt .
 
+RUN pip install --no-cache-dir torch==2.7.1 torchvision==0.22.1
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
