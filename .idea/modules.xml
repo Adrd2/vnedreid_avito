@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/gibddAPI.iml" filepath="$PROJECT_DIR$/gibddAPI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gibddAPI.main.iml" filepath="$PROJECT_DIR$/.idea/modules/gibddAPI.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gibddAPI.test.iml" filepath="$PROJECT_DIR$/.idea/modules/gibddAPI.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/vnedreid_avito.iml" filepath="$PROJECT_DIR$/.idea/vnedreid_avito.iml" />
     </modules>
   </component>

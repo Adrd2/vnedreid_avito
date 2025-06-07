@@ -1,0 +1,6 @@
+server:
+  port: 8081
+
+gibdd:
+  base-url: https://www.api-cloud.ru/gibdd
+  timeout: 120000
