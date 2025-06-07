@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_tables, delete_tables
 from router.auth import auth_router
-from router.car import car_router
+from router.car import router as car_router
 from repositories.car import CarRepository
 
 
@@ -18,8 +18,6 @@ async def lifespan(app: FastAPI):
     print('База очищена')
     await create_tables()
     print('База готова к работе')
-    CarRepository._ensure_upload_dir_exists()
-    print('Папка uploads создана')
     yield
     print('Выключение')
 
@@ -63,7 +61,7 @@ app.include_router(car_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # Тут адрес фронтенда
+    allow_origins=["http://localhost:3000/api"],  # Тут адрес фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

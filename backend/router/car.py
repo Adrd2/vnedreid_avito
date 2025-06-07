@@ -1,33 +1,54 @@
-import os
-from fastapi import APIRouter, UploadFile, File, Form, Depends
-from schemas.car import SCarBase, SDamageReport
+from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from schemas.car import (
+    AnalysisResponse, RepairCostEstimateResponse,
+    RepairCostEstimateRequest, Error
+)
 from repositories.car import CarRepository
-from typing import Annotated, List
+from typing import List
 
-
-
-
-car_router = APIRouter(
-    prefix="/cars",
-    tags=['Автомобили']
+router = APIRouter(
+    prefix="/api",
+    tags=['AutoCheck AI']
 )
 
+@router.post(
+    "/analyze",
+    response_model=AnalysisResponse,
+    responses={
+        400: {"model": Error},
+    }
+)
+async def analyze_damage(photos: List[UploadFile] = File(...)):
+    if not photos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "no_photos", "message": "No photos provided"}
+        )
+    
+    try:
+        # Читаем содержимое фотографий (но не сохраняем их)
+        images = [await photo.read() for photo in photos]
+        result = await CarRepository.analyze_images(images)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "analysis_failed", "message": str(e)}
+        )
 
-@car_router.post("/assess", response_model=SDamageReport)
-async def assess_car(
-    brand: Annotated[str, Form()],
-    model: Annotated[str, Form()],
-    year: Annotated[int, Form()],
-    files: Annotated[List[UploadFile], File(description="Фотографии автомобиля")]
-):
-    # Сохраняем данные об автомобиле
-    car_data = SCarBase(brand=brand, model=model, year=year)
-    car_id = await CarRepository.create_car(car_data)
-        
-    # Сохраняем изображения
-    await CarRepository.save_car_images(car_id, files)
-    
-    # Получаем отчет о повреждениях
-    report = await CarRepository.get_damage_report()
-    
-    return report
+@router.post(
+    "/repairs",
+    response_model=RepairCostEstimateResponse,
+    responses={
+        400: {"model": Error},
+    }
+)
+async def get_repair_cost(data: RepairCostEstimateRequest):
+    try:
+        result = await CarRepository.get_repair_cost(data.analysisId, data.region)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "estimate_failed", "message": str(e)}
+        )
