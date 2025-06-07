@@ -1,27 +1,54 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List
-from datetime import datetime
+from enum import Enum
 
+class DamageType(str, Enum):
+    SCRATCH = "scratch"
+    DENT = "dent"
+    CRACK = "crack"
+    OTHER = "other"
 
+class DamageSeverity(str, Enum):
+    LIGHT = "light"
+    MODERATE = "moderate"
+    SEVERE = "severe"
 
+class Coordinates(BaseModel):
+    x: float
+    y: float
+    width: float
+    height: float
 
-class SCarBase(BaseModel):
-    brand: str
-    model: str
-    year: int
+class Damage(BaseModel):
+    id: str
+    part: str
+    type: DamageType
+    severity: DamageSeverity
+    coordinates: Coordinates
 
+class AnalysisResponse(BaseModel):
+    analysisId: str
+    damages: List[Damage]
 
-class SCarCreate(SCarBase):
-    images: List[str]
+class RepairCostEstimateRequest(BaseModel):
+    analysisId: str
+    region: str
 
+class RepairItem(BaseModel):
+    damageId: str
+    part: str
+    work: str
+    cost: float
 
-class SCarImage(BaseModel):
-    image_url: str
+class RepairCostEstimateResponse(BaseModel):
+    estimateId: str
+    region: str
+    currency: str = "RUB"
+    repairs: List[RepairItem]
+    totalCost: float
 
-
-class SDamageReport(BaseModel):
-    damage_description: str
-    current_damage_coef: float
-    historical_damage_coef: float
-
+class Error(BaseModel):
+    code: str
+    message: str
+    coordinates: str | None = None
     model_config = ConfigDict(from_attributes=True)

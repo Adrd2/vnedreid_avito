@@ -1,24 +1,21 @@
-from datetime import datetime, timezone
-from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Model
 
-
-
-
-class CarOrm(Model):
-    __tablename__ = 'cars'
+class CarAnalysisOrm(Model):
+    __tablename__ = 'car_analyses'
     
-    id: Mapped[int] = mapped_column(primary_key=True)
-    brand: Mapped[str]
-    model: Mapped[str]
-    year: Mapped[int]
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    id: Mapped[str] = mapped_column(primary_key=True)
 
-
-class CarImageOrm(Model):
-    __tablename__ = 'car_images'
+class CarDamageOrm(Model):
+    __tablename__ = 'car_damages'
     
-    id: Mapped[int] = mapped_column(primary_key=True)
-    car_id: Mapped[int] = mapped_column(ForeignKey('cars.id'))
-    image_url: Mapped[str]
+    id: Mapped[str] = mapped_column(primary_key=True)
+    analysis_id: Mapped[str] = mapped_column(ForeignKey('car_analyses.id'))
+    part: Mapped[str]
+    type: Mapped[str]  # scratch, dent, crack, other
+    severity: Mapped[str]  # light, moderate, severe
+    x: Mapped[float]
+    y: Mapped[float]
+    width: Mapped[float]
+    height: Mapped[float]
