@@ -32,5 +32,17 @@ services:
     ports:
       - "8080:80"
 
+  vin-microservice:
+    build:
+      context: ./vin-microservice
+      dockerfile: Dockerfile
+    environment:
+      GIBDD_TOKEN: API_TOKEN
+    ports:
+      - "8085:8081"
+    depends_on:
+      - db
+    restart: unless-stopped
+
 volumes:
   db_data:
