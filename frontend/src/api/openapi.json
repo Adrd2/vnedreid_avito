@@ -1,0 +1,312 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AutoCheck AI API",
+    "description": "API for the AutoCheck AI application for evaluating car damages from photos",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.autocheck.ai/api",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/upload": {
+      "post": {
+        "summary": "Upload car photos",
+        "description": "Upload photos of the car from different angles to analyze damage",
+        "operationId": "uploadPhotos",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Photos uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze": {
+      "post": {
+        "summary": "Analyze car damage",
+        "description": "Analyze the damage from uploaded photos",
+        "operationId": "analyzeDamage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string",
+                    "description": "Session ID from the upload response"
+                  }
+                },
+                "required": ["sessionId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/repairs": {
+      "post": {
+        "summary": "Get repair cost estimate",
+        "description": "Get an estimate for the repair costs based on the analysis",
+        "operationId": "getRepairCostEstimate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "analysisId": {
+                    "type": "string",
+                    "description": "Analysis ID from the analysis response"
+                  },
+                  "region": {
+                    "type": "string",
+                    "description": "Region for the cost estimate"
+                  }
+                },
+                "required": ["analysisId", "region"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Repair cost estimate completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepairCostEstimateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Analysis not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UploadResponse": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "Session ID for the uploaded photos"
+          },
+          "uploadedPhotos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "angle": {
+                  "type": "string",
+                  "enum": ["front", "back", "left", "right", "damage_closeup"]
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "analysisId": {
+            "type": "string",
+            "description": "Analysis ID"
+          },
+          "damages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "part": {
+                  "type": "string",
+                  "description": "Car part that is damaged"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["scratch", "dent", "crack", "other"]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": ["light", "moderate", "severe"]
+                },
+                "coordinates": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "width": {
+                      "type": "number"
+                    },
+                    "height": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "RepairCostEstimateResponse": {
+        "type": "object",
+        "properties": {
+          "estimateId": {
+            "type": "string",
+            "description": "Estimate ID"
+          },
+          "region": {
+            "type": "string",
+            "description": "Region for the estimate"
+          },
+          "currency": {
+            "type": "string",
+            "default": "RUB"
+          },
+          "repairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "damageId": {
+                  "type": "string"
+                },
+                "part": {
+                  "type": "string"
+                },
+                "work": {
+                  "type": "string"
+                },
+                "cost": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "totalCost": {
+            "type": "number"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
