@@ -68,12 +68,7 @@ You can modify these settings based on your environment needs. For production, u
 
 The API documentation is available in OpenAPI format in the `openapi.yaml` file in the root directory. This documentation describes all endpoints, request/response formats, and data models used by the application.
 
-Since the backend API is not available during development, this documentation serves as a reference for implementing the frontend and creating mock data.
-   # or
-   yarn dev
-   ```
-
-4. Open your browser and navigate to `http://localhost:5173`
+1. Open your browser and navigate to `http://localhost:5173`
 
 ## Project Structure
 
@@ -98,19 +93,6 @@ vnedraid-frontend/
 ├── tailwind.config.js   # Tailwind CSS configuration
 ├── tsconfig.json        # TypeScript configuration
 └── vite.config.ts       # Vite configuration
-```
-
-## Configuration
-
-The application can be configured using the configuration file located at `src/config/config.ts`. You can change the backend API URL and other settings there.
-
-```typescript
-// src/config/config.ts
-export const config = {
-  apiUrl: 'http://localhost:3000/api',
-  environment: 'development',
-  debug: true,
-};
 ```
 
 For production builds, update the API URL to your production backend.

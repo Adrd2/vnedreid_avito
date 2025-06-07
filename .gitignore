@@ -48,6 +48,4 @@ secrets.yml
 .DS_Store
 Thumbs.db
 
-assets
-
 test.py
