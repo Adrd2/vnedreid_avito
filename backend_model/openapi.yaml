@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: Car Defects Detection API
+  description: |
+    API for detecting car defects using computer vision models.
+    
+    This API provides endpoints to:
+    - Detect various types of car defects (dents, scratches, cracks, etc.)
+    - Identify car parts where defects are located
+    - Assess severity of detected defects
+    - Return comprehensive analysis reports
+    
+    ## Supported Defect Types
+    - Dent
+    - Scratch  
+    - Cracked
+    - Flaking
+    - Broken part
+    - Paint chip
+    - Missing part
+    - Corrosion
+    
+    ## Supported Car Parts
+    - Windshield, Back-windshield
+    - Front-window, Back-window
+    - Front-door, Back-door
+    - Front-wheel, Back-wheel
+    - Front-bumper, Back-bumper
+    - Headlight, Tail-light
+    - Hood, Trunk
+    - Mirror, Roof, Grille
+    - Fender, Quarter-panel, Rocker-panel
+    - License-plate
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4070/api/v1
+    description: Local development server
+  - url: https://api.example.com/v1
+    description: Production server
+
+paths:
+  /find_defects:
+    post:
+      tags:
+        - Detection
+      summary: Detect car defects in uploaded image
+      description: |
+        Upload a car image to detect defects such as dents, scratches, cracks, etc.
+        
+        The API will:
+        1. Detect car parts in the image
+        2. Identify various types of damage/defects
+        3. Match defects to specific car parts
+        4. Assess severity of each defect
+        5. Return a comprehensive report
+      operationId: find_defects
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Car image file to analyze
+              required:
+                - file
+            encoding:
+              file:
+                contentType: image/*
+      responses:
+        '200':
+          description: Successful defect detection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefectDetectionResponse'
+              example:
+                report:
+                  - defect_type: "Dent"
+                    car_part: "Front-door"
+                    severity: 4.5
+                    confidence: 0.89
+                  - defect_type: "Scratch"
+                    car_part: "Front-bumper"
+                    severity: 0.1
+                    confidence: 0.76
+                total_defects: 2
+                processing_time_ms: 1250.5
+        '400':
+          description: Bad Request - Invalid image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /healthcheck:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: |
+        Check the health status of the API service.
+        
+        Returns information about:
+        - Service status
+        - API version
+        - Model loading status
+        - GPU availability
+        - Current timestamp
+      operationId: healthcheck
+      responses:
+        '200':
+          description: Service health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+              example:
+                status: "healthy"
+                timestamp: "2025-06-07T14:30:00Z"
+                version: "1.0.0"
+                models_loaded: true
+                gpu_available: true
+
+components:
+  schemas:
+    DefectDetection:
+      type: object
+      required:
+        - defect_type
+        - car_part
+        - severity
+        - confidence
+      properties:
+        defect_type:
+          type: string
+          description: Type of defect detected
+          enum:
+            - Dent
+            - Cracked
+            - Scratch
+            - Flaking
+            - Broken part
+            - Paint chip
+            - Missing part
+            - Corrosion
+          example: "Dent"
+        car_part:
+          type: string
+          description: Car part where defect is located
+          enum:
+            - Windshield
+            - Back-windshield
+            - Front-window
+            - Back-window
+            - Front-door
+            - Back-door
+            - Front-wheel
+            - Front-bumper
+            - Back-bumper
+            - Headlight
+            - Tail-light
+            - Hood
+            - Trunk
+            - License-plate
+            - Mirror
+            - Roof
+            - Grille
+            - Rocker-panel
+            - Quarter-panel
+            - Fender
+            - Unknown
+          example: "Front-door"
+        severity:
+          type: number
+          format: float
+          description: Severity level of the defect
+          minimum: 0.0
+          maximum: 5.0
+          example: 0.5
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score between 0 and 1
+          example: 0.89
+
+    DefectDetectionResponse:
+      type: object
+      required:
+        - report
+        - total_defects
+        - processing_time_ms
+      properties:
+        report:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefectDetection'
+          description: List of detected defects
+        total_defects:
+          type: integer
+          minimum: 0
+          description: Total number of defects detected
+          example: 2
+        processing_time_ms:
+          type: number
+          format: float
+          minimum: 0
+          description: Processing time in milliseconds
+          example: 1250.5
+
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+        - models_loaded
+        - gpu_available
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+          description: Service status
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          description: Current timestamp
+          example: "2025-06-07T14:30:00Z"
+        version:
+          type: string
+          description: API version
+          example: "1.0.0"
+        models_loaded:
+          type: boolean
+          description: Whether models are loaded successfully
+          example: true
+        gpu_available:
+          type: boolean
+          description: Whether GPU is available
+          example: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid image format"
+        detail:
+          type: string
+          description: Detailed error information
+          example: "Supported formats are: jpg, jpeg, png, bmp, tiff"
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: "2025-06-07T14:30:00Z"
+
+tags:
+  - name: Detection
+    description: Car defects detection operations
+  - name: Health
+    description: Service health and status operations
