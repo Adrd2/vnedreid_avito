@@ -1,0 +1,336 @@
+openapi: 3.0.3
+info:
+  title: AutoCheck AI API
+  description: |
+    API for the AutoCheck AI car damage assessment service.
+    This API allows uploading car photos, analyzing damage, and getting repair cost estimates.
+  version: 1.0.0
+  contact:
+    name: AutoCheck AI Support
+    email: support@autocheck.ai
+    url: https://autocheck.ai/support
+servers:
+  - url: 'https://api.autocheck.ai/api'
+    description: Production server
+  - url: 'http://localhost:3000/api'
+    description: Development server
+tags:
+  - name: Upload
+    description: Photo upload endpoints
+  - name: Analysis
+    description: Damage analysis endpoints
+  - name: Repair
+    description: Repair cost estimation endpoints
+
+paths:
+  /upload:
+    post:
+      summary: Upload car photos
+      description: |
+        Upload one or more photos of a car to be analyzed for damage.
+        Photos should be high quality and clearly show the car from different angles.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: One or more photo files to upload
+      responses:
+        '200':
+          description: Photos uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  sessionId:
+                    type: string
+                    example: 'sess_12345678'
+                    description: Session ID to use for analysis
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analyze:
+    post:
+      summary: Analyze car damage
+      description: |
+        Analyze uploaded car photos for damage.
+        This is an asynchronous operation and may take some time to complete.
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  description: Session ID from photo upload
+      responses:
+        '200':
+          description: Analysis completed or in progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysisId:
+                    type: string
+                    example: 'anls_12345678'
+                    description: Analysis ID to use for getting results
+                  status:
+                    type: string
+                    enum: ['completed', 'processing']
+                    example: 'completed'
+                  damages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Damage'
+                    description: Array of detected damages (only if status is 'completed')
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis/{analysisId}:
+    get:
+      summary: Get analysis results
+      description: Get the results of a damage analysis
+      tags:
+        - Analysis
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          description: Analysis ID from the analyze endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    enum: ['completed', 'processing', 'failed']
+                    example: 'completed'
+                  damages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Damage'
+                    description: Array of detected damages (only if status is 'completed')
+        '404':
+          description: Analysis not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /repairs:
+    post:
+      summary: Get repair cost estimate
+      description: Get an estimate of repair costs for detected damages
+      tags:
+        - Repair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - analysisId
+              properties:
+                analysisId:
+                  type: string
+                  description: Analysis ID from damage analysis
+                region:
+                  type: string
+                  description: Region for cost estimation
+                  example: 'Moscow'
+      responses:
+        '200':
+          description: Repair cost estimate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepairCostEstimate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Analysis not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: 'An error occurred'
+        code:
+          type: string
+          example: 'invalid_session'
+
+    Damage:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1'
+          description: Unique ID for the damage
+        part:
+          type: string
+          example: 'Front bumper'
+          description: Car part with damage
+        type:
+          type: string
+          enum: ['scratch', 'dent', 'crack', 'other']
+          example: 'scratch'
+          description: Type of damage
+        severity:
+          type: string
+          enum: ['light', 'moderate', 'severe']
+          example: 'moderate'
+          description: Severity of damage
+        coordinates:
+          type: object
+          properties:
+            x:
+              type: integer
+              description: X coordinate of damage on the image
+              example: 150
+            y:
+              type: integer
+              description: Y coordinate of damage on the image
+              example: 200
+            width:
+              type: integer
+              description: Width of damage area
+              example: 100
+            height:
+              type: integer
+              description: Height of damage area
+              example: 50
+
+    RepairCostEstimate:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        estimateId:
+          type: string
+          example: 'est_12345678'
+          description: Unique ID for this estimate
+        region:
+          type: string
+          example: 'Moscow'
+          description: Region for the cost estimate
+        currency:
+          type: string
+          example: 'RUB'
+          description: Currency for the costs
+        repairs:
+          type: array
+          items:
+            type: object
+            properties:
+              damageId:
+                type: string
+                example: '1'
+                description: ID of the damage
+              part:
+                type: string
+                example: 'Front bumper'
+                description: Car part to repair
+              work:
+                type: string
+                example: 'Repaint and repair'
+                description: Type of work needed
+              cost:
+                type: number
+                example: 12000
+                description: Estimated cost for this repair
+        totalCost:
+          type: number
+          example: 35000
+          description: Total estimated repair cost
