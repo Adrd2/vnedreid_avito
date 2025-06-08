@@ -102,8 +102,6 @@ const DamageCard: React.FC<DamageCardProps> = ({
     return partsMap[partId] || partId.replace(/-/g, ' ');
   }
 
-  console.log('DamageCard rendered for part:', partId, 'with damage:', damage);
-
   return (
     <div 
       className={`bg-white border rounded-lg p-4 transition-all duration-300 ${

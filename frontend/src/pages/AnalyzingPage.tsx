@@ -13,17 +13,22 @@ const AnalyzingPage: React.FC = () => {
   const { progress, status, startAnalysis } = useFakeAnalysisProcess(
     analyseId ? parseInt(analyseId, 10) : null
   );
-  const { getAnalysisResults, setAnalyseId } = useAnalysisProcess();
+  const { getAnalysisResults, setAnalyseId } = useAnalysisProcess(analyseId);
   const navigate = useNavigate();
 
   // Start the analysis when component mounts
   useEffect(() => {
     startAnalysis();
 
+    console.log('Starting analysis for ID:', analyseId);
+
     if (analyseId) {
       setAnalyseId(parseInt(analyseId, 10));
+
+      console.log('Starting analysis for ID:', analyseId);
       
       getAnalysisResults().then((response => {
+        console.log('Analysis response:', response);
         navigate(`/analysis-results/${analyseId}`, {
           state: {
             response: response,

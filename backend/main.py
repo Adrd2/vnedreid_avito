@@ -61,7 +61,7 @@ app.include_router(car_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Тут адрес фронтенда
+    allow_origins=["http://localhost:8081"],  # Тут адрес фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

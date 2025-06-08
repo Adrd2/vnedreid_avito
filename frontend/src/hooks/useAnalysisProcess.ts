@@ -172,14 +172,20 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
    * Get analysis results
    */
   const getAnalysisResults = async () => {
+    console.log('120930: getAnalysisResults called');
+
     if (!analyseId) {
       setError('No active analysis session. Please start a new analysis.');
       return null;
     }
 
+    console.log('120930: getAnalysisResults called with analyseId:', analyseId);
+
     try {
       setIsLoading(true);
       setError(null);
+
+      console.log('120930: before API call');
       
       // Clear any existing timeout
       if (timeoutRef.current) {
@@ -191,7 +197,9 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
       
       try {
         // Try to call the real API
+        console.log('120930:');
         apiResponsePromise = apiService.getAnalyse(analyseId);
+        console.log('120930: apiResponsePromise created');
         
         // Set up a timeout for mock data fallback
         const timeoutPromise = new Promise<AnalysisResponse>((resolve) => {
@@ -207,6 +215,7 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
           timeoutPromise
         ]);
         
+        console.log('120930:');
         // Clear the timeout if the API resolved first
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
@@ -215,6 +224,8 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
         
         const response = result.data;
         setAnalysisResult(response);
+        console.log('1Analysis response:', response);
+
         return response.details_analize;
       } catch (err) {
         // Fall back to mock data if API fails

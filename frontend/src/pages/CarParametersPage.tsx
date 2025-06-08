@@ -64,7 +64,7 @@ const CarParametersPage: React.FC = () => {
       
       return () => clearTimeout(timeout);
     }
-  }, [carParams, localCarParams]);
+  }, [carParams]);
 
   // Handle brand change to update available models
   const handleBrandChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
