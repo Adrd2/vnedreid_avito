@@ -13,7 +13,7 @@ const AnalysisResultsPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { getAnalysisResults, setAnalyseId, isLoading, error } = useAnalysisProcess();
+  const { getAnalysisResults, setAnalyseId, isLoading, error } = useAnalysisProcess(analyseId);
   const [hoveredPart, setHoveredPart] = useState<CarPartType | string | null>(null);
   const [overall, setOverAll] = useState(mockOverallAssessment);
   // @ts-ignore
