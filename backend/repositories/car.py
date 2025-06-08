@@ -61,6 +61,29 @@ class CarRepository:
         # Коэффициенты серьезности по типам повреждений
     
     @classmethod
+    async def _get_test_defects(cls):
+        """Возвращает тестовые данные, если нейросеть недоступна"""
+        return {
+            "report": [
+                {
+                    "car_part": "Front-door",
+                    "confidence": 0.89,
+                    "defect_type": "Dent",
+                    "severity": 4.5
+                },
+                {
+                    "car_part": "Front-bumper",
+                    "confidence": 0.76,
+                    "defect_type": "Scratch",
+                    "severity": 0.1
+                }
+            ],
+            "total_defects": 2,
+            "processing_time_ms": 1250.5
+        }
+        
+    
+    @classmethod
     async def _send_to_neural(cls, image_path: str) -> Dict:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -257,6 +280,22 @@ class CarRepository:
     
     @classmethod
     async def analyse(cls, analyse_id: int) -> SAnalyseResult:
+        try:
+            async with httpx.AsyncClient() as client:
+                healthcheck = await client.get(
+                    "http://localhost:4070/api/v1/healthcheck",
+                    timeout=5.0
+                )
+                if healthcheck.status_code != 200:
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Сервис анализа изображений недоступен"
+                    )
+        except Exception as e:
+            raise HTTPException(
+                status_code=503,
+                detail=f"Не удалось проверить статус сервиса анализа: {str(e)}"
+            )
         async with new_session() as session:
             # Получаем анализ из БД
             query = select(CarAnalysisOrm).where(CarAnalysisOrm.id == analyse_id)
@@ -282,7 +321,8 @@ class CarRepository:
                         image_path = os.path.join(position_dir, image_file)
                         
                         # Отправляем изображение в нейросеть
-                        neural_response = await cls._send_to_neural(image_path)
+                        #neural_response = await cls._send_to_neural(image_path)
+                        neural_response = await cls._get_test_defects()
                         
                         # Обрабатываем каждый дефект
                         for defect in neural_response.get("report", []):
@@ -380,26 +420,3 @@ class CarRepository:
                 session.add(defect_orm)
         
         await session.commit()
-        
-        
-    @classmethod
-    async def _get_test_defects(cls):
-        """Возвращает тестовые данные, если нейросеть недоступна"""
-        return {
-            "report": [
-                {
-                    "car_part": "Front-door",
-                    "confidence": 0.89,
-                    "defect_type": "Dent",
-                    "severity": 4.5
-                },
-                {
-                    "car_part": "Front-bumper",
-                    "confidence": 0.76,
-                    "defect_type": "Scratch",
-                    "severity": 0.1
-                }
-            ],
-            "total_defects": 2,
-            "processing_time_ms": 1250.5
-        }

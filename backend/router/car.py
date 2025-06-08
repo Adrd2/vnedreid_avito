@@ -161,7 +161,7 @@ async def create_analyse(analyse_data: SCreateAnalyse):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("change_params")
+@router.post("/change_params")
 async def update_analyse(analyse_id: int):
     try:
         data = {
