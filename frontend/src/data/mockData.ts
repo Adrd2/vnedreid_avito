@@ -41,7 +41,7 @@ export const mockCarParameters: CarParameters = {
  */
 export const mockCreateAnalysisResponse: CreateAnalysisResponse = {
   analyse_id: 12345,
-  car_params: mockCarParameters
+  vin_check_data: mockCarParameters
 };
 
 /**

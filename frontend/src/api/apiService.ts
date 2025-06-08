@@ -68,6 +68,7 @@ class ApiService {
   ): Promise<AxiosResponse> {
     const formData = new FormData();
 
+
     files.forEach((file) => {
       formData.append('photos', file);
     });

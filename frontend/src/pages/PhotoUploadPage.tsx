@@ -28,7 +28,7 @@ const uploadZones: PhotoUploadZone[] = [
 const PhotoUploadPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
   const navigate = useNavigate();
-  const { uploadPhotos, isLoading, error } = useAnalysisProcess();
+  const { uploadPhotos, isLoading, error } = useAnalysisProcess(analyseId);
   
   const [photos, setPhotos] = useState<Record<'front' | 'rear' | 'left' | 'right', File | null>>({
     front: null,
