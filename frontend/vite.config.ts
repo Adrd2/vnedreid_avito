@@ -8,7 +8,7 @@ export default defineConfig({
   publicDir: 'public',
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.svg'],
   server: {
-    port: 5173,
+    port: 8080,
     open: true,
   },
   build: {
