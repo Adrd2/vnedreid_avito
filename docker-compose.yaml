@@ -17,45 +17,45 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://vnedreid:password@db:5432/avitoDb
+      DATABASE_URL: postgresql+asyncpg://vnedreid:password@db:5432/avitoDb
     depends_on:
       - db
     ports:
       - "8000:8000"
 
-  cv-model:
-    build:
-      context: ./backend_model
-      dockerfile: Dockerfile
-    environment:
-      MODEL_PATH: /app/models/model.pth  # если нужно
-    ports:
-      - "4070:4070"
-    depends_on:
-      - db
-    restart: unless-stopped
+#  cv-model:
+#    build:
+#      context: ./backend_model
+#      dockerfile: Dockerfile
+#    environment:
+#      MODEL_PATH: /app/models/model.pth  # если нужно
+#    ports:
+#      - "4070:4070"
+#    depends_on:
+#      - db
+#    restart: unless-stopped
 
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    depends_on:
-      - backend
-    ports:
-      - "8080:80"
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - backend
+#    ports:
+#      - "8080:80"
 
-  vin-microservice:
-    build:
-      context: .
-      dockerfile: gibddAPI/Dockerfile
-    environment:
-      GIBDD_TOKEN: API_TOKEN
-    ports:
-      - "8085:8081"
-    depends_on:
-      - db
-    restart: unless-stopped
+#  vin-microservice:
+#    build:
+#      context: .
+#      dockerfile: gibddAPI/Dockerfile
+#    environment:
+#      GIBDD_TOKEN: API_TOKEN
+#    ports:
+#      - "8085:8081"
+#    depends_on:
+#      - db
+#    restart: unless-stopped
 
 volumes:
   db_data:
