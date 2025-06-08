@@ -3,85 +3,125 @@
  */
 
 /**
- * Car damage photo angles
+ * Create analysis request parameters
  */
-export type PhotoAngle = 'front' | 'back' | 'left' | 'right' | 'damage_closeup';
-
-/**
- * Uploaded photo information
- */
-export interface UploadedPhoto {
-  id: string;
-  angle: PhotoAngle;
-  url: string;
+export interface CreateAnalysisRequest {
+  vin: string;
 }
 
 /**
- * Upload response from the API
+ * Car parameters
  */
-export interface UploadResponse {
-  sessionId: string;
-  uploadedPhotos: UploadedPhoto[];
+export interface CarParameters {
+  brand: string;
+  model: string;
+  year: number;
+  transmission: 'Ручная' | 'Автоматическая' | 'Полуавтоматическая';
+  drive_type: 'Передний' | 'Задний' | 'Полный';
+  color: string;
+  wheel_side: 'Левый' | 'Правый';
+  engine_volume: number;
+  engine_type: 'Бензиновый' | 'Дизельный' | 'Гибридный' | 'Электрический';
+  body_type: 'Седан' | 'Хэтчбек' | 'Универсал' | 'Купе' | 'Кроссовер' | 'Внедорожник' | 'Пикап';
+}
+
+/**
+ * Create analysis response
+ */
+export interface CreateAnalysisResponse {
+  analyse_id: number;
+  car_params: CarParameters;
+}
+
+/**
+ * Car damage photo positions
+ */
+export type PhotoPosition = 'front' | 'rear' | 'left' | 'right' | 'other';
+
+/**
+ * Upload request to the API
+ */
+export interface UploadRequest {
+  photos: File[];
+  positions: PhotoPosition[];
+  onUploadProgress?: (progressEvent: any) => void;
 }
 
 /**
  * Damage types
  */
-export type DamageType = 'scratch' | 'dent' | 'crack' | 'other';
+export type DamageType = 'Dent' | 'Cracked' | 'Scratch' | 'Flaking' | 'Broken part' | 'Paint chip' | 'Missing part' | 'Corrosion';
 
 /**
- * Damage severity levels
+ * Car part information
  */
-export type DamageSeverity = 'light' | 'moderate' | 'severe';
-
-/**
- * Damage coordinates on the image
- */
-export interface DamageCoordinates {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+export interface CarPart {
+  quantity: number;
+  metadata?: any[];
+  defects: DamageType[];
+  detailed: string[];
 }
 
 /**
- * Detected damage information
+ * Car part types
  */
-export interface Damage {
-  id: string;
-  part: string;
-  type: DamageType;
-  severity: DamageSeverity;
-  coordinates: DamageCoordinates;
+export type CarPartType = 
+  | 'Windshield'
+  | 'Back-windshield'
+  | 'Left-Front-window'
+  | 'Left-Back-window'
+  | 'Left-Front-door'
+  | 'Left-Back-door'
+  | 'Left-Front-wheel'
+  | 'Left-Back-wheel'
+  | 'Right-Front-window'
+  | 'Right-Back-window'
+  | 'Right-Front-door'
+  | 'Right-Back-door'
+  | 'Right-Front-wheel'
+  | 'Right-Back-wheel'
+  | 'Front-bumper'
+  | 'Back-bumper'
+  | 'Left-Headlight'
+  | 'Left-Tail-light'
+  | 'Right-Headlight'
+  | 'Right-Tail-light'
+  | 'Hood'
+  | 'Trunk'
+  | 'License-plate'
+  | 'Left-Mirror'
+  | 'Right-Mirror'
+  | 'Roof'
+  | 'Grille'
+  | 'Left-Rocker-panel'
+  | 'Left-Quarter-panel'
+  | 'Left-Fender'
+  | 'Right-Rocker-panel'
+  | 'Right-Quarter-panel'
+  | 'Right-Fender';
+
+/**
+ * Car part information
+ */
+export interface CarParts {
+  [key: string]: CarPart;
+}
+
+/**
+ * Parameters for car analysis
+ */
+export interface Analysis {
+  quality: number;
+  car_parts: CarParts;
+  created_at: string;
 }
 
 /**
  * Analysis response from the API
  */
 export interface AnalysisResponse {
-  analysisId: string;
-  damages: Damage[];
-}
-
-/**
- * Repair information
- */
-export interface Repair {
-  damageId: string;
-  part: string;
-  work: string;
-  cost: number;
-}
-
-/**
- * Repair cost estimate response from the API
- */
-export interface RepairCostEstimateResponse {
-  estimateId: string;
-  region: string;
-  currency: string;
-  repairs: Repair[];
-  totalCost: number;
+  success: boolean;
+  details_analize: Analysis;
 }
 
 /**

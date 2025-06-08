@@ -1,61 +1,54 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
-    "title": "AutoCheck AI API",
-    "description": "API for the AutoCheck AI application for evaluating car damages from photos",
+    "title": "Your App",
+    "description": "FastApi app",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:3000/api",
-      "description": "Development server"
-    },
-    {
-      "url": "https://api.autocheck.ai/api",
-      "description": "Production server"
-    }
-  ],
   "paths": {
-    "/upload": {
+    "/api/create_analyse": {
       "post": {
-        "summary": "Upload car photos",
-        "description": "Upload photos of the car from different angles to analyze damage",
-        "operationId": "uploadPhotos",
+        "tags": [
+          "AutoCheck AI"
+        ],
+        "summary": "Create Analyse",
+        "operationId": "create_analyse_api_create_analyse_post",
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "photos": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
+                "$ref": "#/components/schemas/SCreateAnalyse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "analyse_id": {
+                      "type": "integer",
+                      "title": "Analyse Id"
+                    },
+                    "car_params": {
+                      "$ref": "#/components/schemas/CarParams"
                     }
                   }
                 }
               }
             }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Photos uploaded successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UploadResponse"
-                }
-              }
-            }
           },
-          "400": {
-            "description": "Invalid request",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -63,54 +56,50 @@
         }
       }
     },
-    "/analyze": {
+    "/api/change_params": {
       "post": {
-        "summary": "Analyze car damage",
-        "description": "Analyze the damage from uploaded photos",
-        "operationId": "analyzeDamage",
+        "tags": [
+          "AutoCheck AI"
+        ],
+        "summary": "Change Analyse Params",
+        "operationId": "change_params_api_change_params_post",
+        "parameters": [
+          {
+            "name": "analyse_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Analyse Id"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "sessionId": {
-                    "type": "string",
-                    "description": "Session ID from the upload response"
-                  }
-                },
-                "required": ["sessionId"]
+                  "$ref": "#/components/schemas/CarParams"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
-            "description": "Analysis completed successfully",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnalysisResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Invalid request",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Session not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -118,58 +107,91 @@
         }
       }
     },
-    "/repairs": {
+    "/api/upload": {
       "post": {
-        "summary": "Get repair cost estimate",
-        "description": "Get an estimate for the repair costs based on the analysis",
-        "operationId": "getRepairCostEstimate",
+        "tags": [
+          "AutoCheck AI"
+        ],
+        "summary": "Upload Photos",
+        "operationId": "upload_photos_api_upload_post",
+        "parameters": [
+          {
+            "name": "analyse_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Analyse Id"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "analysisId": {
-                    "type": "string",
-                    "description": "Analysis ID from the analysis response"
-                  },
-                  "region": {
-                    "type": "string",
-                    "description": "Region for the cost estimate"
-                  }
-                },
-                "required": ["analysisId", "region"]
+                "$ref": "#/components/schemas/Body_upload_photos_api_upload_post"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Repair cost estimate completed successfully",
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RepairCostEstimateResponse"
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analyse": {
+      "get": {
+        "tags": [
+          "AutoCheck AI"
+        ],
+        "summary": "Get Analyse",
+        "operationId": "get_analyse_api_analyse_get",
+        "parameters": [
+          {
+            "name": "analyse_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Analyse Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SAnalyseResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Invalid request",
+          "422": {
+            "description": "ValidationError",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Analysis not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -180,132 +202,358 @@
   },
   "components": {
     "schemas": {
-      "UploadResponse": {
-        "type": "object",
+      "Body_upload_photos_api_upload_post": {
         "properties": {
-          "sessionId": {
-            "type": "string",
-            "description": "Session ID for the uploaded photos"
-          },
-          "uploadedPhotos": {
-            "type": "array",
+          "photos": {
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "angle": {
-                  "type": "string",
-                  "enum": ["front", "back", "left", "right", "damage_closeup"]
-                },
-                "url": {
-                  "type": "string"
-                }
-              }
-            }
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Photos"
+          },
+          "positions": {
+            "items": {
+              "type": "string",
+              "format": "enum",
+              "enum": [
+                "front",
+                "back",
+                "left",
+                "right",
+                "other"
+              ]
+            },
+            "type": "array",
+            "title": "Positions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "photos",
+          "positions"
+        ],
+        "title": "Body_upload_photos_api_upload_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "CarParams": {
+        "properties": {
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "transmission": {
+            "type": "string",
+            "enum": [
+              "Ручная",
+              "Автоматическая",
+              "Полуавтоматическая"
+            ],
+            "title": "Transmission"
+          },
+          "drive_type": {
+            "type": "string",
+            "enum": [
+              "Передний",
+              "Задний",
+              "Полный"
+            ],
+            "title": "Drive Type"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          },
+          "wheel_side": {
+            "type": "string",
+            "enum": [
+              "Левый",
+              "Правый"
+            ],
+            "title": "Wheel Side"
+          },
+          "engine_volume": {
+            "type": "number",
+            "format": "float",
+            "title": "Engine Volume"
+          },
+          "engine_type": {
+            "type": "string",
+            "enum": [
+              "Бензиновый",
+              "Дизельный",
+              "Гибридный",
+              "Электрический"
+            ],
+            "title": "Engine Type"
+          },
+          "body_type": {
+            "type": "string",
+            "enum": [
+              "Седан",
+              "Хэтчбек",
+              "Универсал",
+              "Купе",
+              "Кроссовер",
+              "Внедорожник",
+              "Пикап"
+            ],
+            "title": "Body Type"
           }
         }
       },
-      "AnalysisResponse": {
-        "type": "object",
+      "SAnalyseResponse": {
         "properties": {
-          "analysisId": {
-            "type": "string",
-            "description": "Analysis ID"
+          "success": {
+            "type": "boolean",
+            "title": "Success"
           },
-          "damages": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "part": {
-                  "type": "string",
-                  "description": "Car part that is damaged"
-                },
-                "type": {
-                  "type": "string",
-                  "enum": ["scratch", "dent", "crack", "other"]
-                },
-                "severity": {
-                  "type": "string",
-                  "enum": ["light", "moderate", "severe"]
-                },
-                "coordinates": {
-                  "type": "object",
-                  "properties": {
-                    "x": {
-                      "type": "number"
-                    },
-                    "y": {
-                      "type": "number"
-                    },
-                    "width": {
-                      "type": "number"
-                    },
-                    "height": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
+          "details_analize": {
+            "$ref": "#/components/schemas/SAnalyseResult"
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "details_analize"
+        ],
+        "title": "SAnalyseResponse"
       },
-      "RepairCostEstimateResponse": {
-        "type": "object",
+      "SAnalyseResult": {
         "properties": {
-          "estimateId": {
+          "quality": {
+            "type": "integer",
+            "title": "Quality"
+          },
+          "car_parts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SCarPartAnalysis"
+            },
+            "type": "object",
+            "title": "Car Parts"
+          },
+          "created_at": {
             "type": "string",
-            "description": "Estimate ID"
-          },
-          "region": {
-            "type": "string",
-            "description": "Region for the estimate"
-          },
-          "currency": {
-            "type": "string",
-            "default": "RUB"
-          },
-          "repairs": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "damageId": {
-                  "type": "string"
-                },
-                "part": {
-                  "type": "string"
-                },
-                "work": {
-                  "type": "string"
-                },
-                "cost": {
-                  "type": "number"
-                }
-              }
-            }
-          },
-          "totalCost": {
-            "type": "number"
+            "format": "date-time",
+            "title": "Created At"
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "quality",
+          "car_parts",
+          "created_at"
+        ],
+        "title": "SAnalyseResult"
       },
-      "Error": {
-        "type": "object",
+      "SCarPartAnalysis": {
         "properties": {
-          "code": {
-            "type": "string"
+          "quality": {
+            "type": "integer",
+            "title": "Quality"
           },
-          "message": {
-            "type": "string"
+          "metadata": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Metadata",
+            "default": []
+          },
+          "defects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Defects",
+            "default": []
+          },
+          "detailed": {
+            "items": {
+              "$ref": "#/components/schemas/SDefectDetail"
+            },
+            "type": "array",
+            "title": "Detailed",
+            "default": []
           }
-        }
+        },
+        "type": "object",
+        "required": [
+          "quality"
+        ],
+        "title": "SCarPartAnalysis"
+      },
+      "SCreateAnalyse": {
+        "properties": {
+          "vin": {
+            "type": "string",
+            "title": "Vin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vin"
+        ],
+        "title": "SCreateAnalyse"
+      },
+      "SDefectDetail": {
+        "properties": {
+          "defect_type": {
+            "type": "string",
+            "title": "Defect Type"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Severity"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "defect_type",
+          "severity",
+          "description"
+        ],
+        "title": "SDefectDetail"
+      },
+      "SUser": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "created_at"
+        ],
+        "title": "SUser"
+      },
+      "SUserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "SUserLogin"
+      },
+      "SUserRegister": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "password_confirm": {
+            "type": "string",
+            "title": "Password Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password",
+          "password_confirm"
+        ],
+        "title": "SUserRegister"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

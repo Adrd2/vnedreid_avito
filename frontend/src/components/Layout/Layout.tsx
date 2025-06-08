@@ -14,24 +14,18 @@ const Layout: FC<LayoutProps> = ({
   showFooter = true 
 }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       {showHeader && (
         <motion.header 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="bg-white shadow-sm py-4"
+          className="bg-white py-4"
         >
           <div className="container mx-auto px-4 flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2">
-              <img src={LogoImage} alt="AutoCheck AI" className="h-8" />
-              <span className="text-xl font-semibold text-primary-500">AutoCheck AI</span>
+              <img src={LogoImage} alt="Авито авто" className="h-8" />
             </Link>
-            <nav className="flex gap-6">
-              <Link to="/" className="text-gray-600 hover:text-primary-500 transition-colors duration-200">О сервисе</Link>
-              <Link to="/how-it-works" className="text-gray-600 hover:text-primary-500 transition-colors duration-200">Как это работает</Link>
-              <Link to="/upload" className="text-primary-500 font-medium hover:text-primary-600 transition-colors duration-200">Начать анализ</Link>
-            </nav>
           </div>
         </motion.header>
       )}
@@ -53,13 +47,12 @@ const Layout: FC<LayoutProps> = ({
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="bg-gray-100 py-6"
+          className="bg-white py-6"
         >
           <div className="container mx-auto px-4">
             <div className="flex justify-center items-center">
               <div className="flex items-center gap-2">
-                <img src={LogoImage} alt="AutoCheck AI" className="h-6" />
-                <span className="text-sm text-gray-600">© {new Date().getFullYear()} AutoCheck AI</span>
+                <img src={LogoImage} alt="Авито авто" className="h-6" />
               </div>
             </div>
           </div>

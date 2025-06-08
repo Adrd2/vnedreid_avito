@@ -1,0 +1,196 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Layout from '../components/Layout';
+import { Button } from '../components/UI';
+import { CarVisualization } from '../components/Car';
+import { useAnalysisProcess } from '../hooks/useAnalysisProcess';
+import { mockOverallAssessment, mockDamages } from '../data/mockData';
+import type { CarPartType } from '../types/api.types';
+
+const AnalysisResultsPage: React.FC = () => {
+  const { analyseId } = useParams<{ analyseId: string }>();
+  const navigate = useNavigate();
+  const { getAnalysisResults, setAnalyseId, isLoading, error } = useAnalysisProcess();
+  const [hoveredPart, setHoveredPart] = useState<CarPartType | null>(null);
+  const [overall] = useState(mockOverallAssessment);
+  const [selectedView, setSelectedView] = useState<'front' | 'rear' | 'left' | 'right' | 'top'>('top');
+
+  // Set the analyseId on component mount
+  useEffect(() => {
+    if (analyseId) {
+      setAnalyseId(parseInt(analyseId, 10));
+    } else {
+      navigate('/');
+    }
+  }, [analyseId, setAnalyseId, navigate]);
+
+  // Get analysis results
+  useEffect(() => {
+    if (analyseId) {
+      getAnalysisResults();
+    }
+  }, [analyseId, getAnalysisResults]);
+
+  // Listen for hash changes to change the view
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['front', 'rear', 'left', 'right', 'top'].includes(hash)) {
+        setSelectedView(hash as any);
+      }
+    };
+
+    // Set initial view from hash if available
+    handleHashChange();
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Group damaged parts by severity
+  const damages = mockDamages;
+
+  const goToAd = () => {
+    alert('Перенаправление на объявление...');
+  };
+
+  const getPartColor = (partId: string): string => {
+    const damage = damages.find(d => d.part === partId);
+    if (!damage) return 'fill-gray-200 stroke-gray-300';
+    
+    switch (damage.severity) {
+      case 'Легкие':
+        return 'fill-yellow-100 stroke-yellow-400';
+      case 'Средние':
+        return 'fill-orange-100 stroke-orange-400';
+      case 'Серьезные':
+        return 'fill-red-100 stroke-red-400';
+      default:
+        return 'fill-gray-200 stroke-gray-300';
+    }
+  };
+
+  const getDamageColor = (severity: string): string => {
+    switch (severity) {
+      case 'Легкие':
+        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+      case 'Средние':
+        return 'bg-orange-50 border-orange-200 text-orange-800';
+      case 'Серьезные':
+        return 'bg-red-50 border-red-200 text-red-800';
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-800';
+    }
+  };
+
+  const getDamageIcon = (index: number): string => {
+    const colors = ['bg-yellow-500', 'bg-orange-500', 'bg-red-500'];
+    const color = colors[Math.min(index, colors.length - 1)];
+    return color;
+  };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="max-w-6xl mx-auto">
+        <motion.h1
+          className="text-3xl font-bold mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Результаты анализа повреждений
+        </motion.h1>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-6">
+            {error}
+          </div>
+        )}        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Car visualization */}
+          <div className="md:col-span-2 bg-white rounded-lg shadow-sm p-6">
+            <CarVisualization 
+              highlightedPart={hoveredPart} 
+              onPartHover={setHoveredPart}
+              selectedView={selectedView}
+            />
+          </div>
+
+          {/* Assessment and damages */}
+          <div className="md:col-span-1">
+            {/* System assessment */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4">Оценка системы:</h2>
+              
+              <div className={`border rounded-lg p-4 ${overall.severity === 'Серьезные' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                <div className="flex items-center mb-2">
+                  {overall.severity === 'Легкие' ? (
+                    <svg className="w-6 h-6 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
+                    </svg>
+                  )}
+                  <span className="font-medium">{overall.severity === 'Легкие' ? 'Повреждения лёгкие' : 'Повреждения серьезные'}</span>
+                </div>
+                <p className="text-sm">{overall.creditEligible ? 'Возможна покупка в кредит' : 'Возможность кредитования отсутствует'}</p>
+              </div>
+            </div>
+            
+            {/* Damages list */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold mb-4">Обнаруженные повреждения</h2>
+                <div className="space-y-4">
+                {damages.map((damage, index) => (
+                  <div 
+                    key={index} 
+                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                      hoveredPart === damage.part ? 'ring-2 ring-blue-400' : ''
+                    } ${getDamageColor(damage.severity)}`}
+                    onMouseEnter={() => setHoveredPart(damage.part)}
+                    onMouseLeave={() => setHoveredPart(null)}
+                  >
+                    <div className="flex items-start">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${getDamageIcon(index)}`}>
+                        {index + 1}
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="font-medium">{damage.part.replace(/-/g, ' ')}</h4>
+                        <p className="text-sm mt-1">{damage.description}</p>
+                        <p className="text-sm mt-2">{damage.severity.toLowerCase()} повреждения</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 text-sm text-gray-600">
+                Если вы не согласны, обратитесь в <a href="#" className="text-blue-500 hover:underline">поддержку</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <Button size="large" onClick={goToAd}>
+            К объявлению
+          </Button>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default AnalysisResultsPage;

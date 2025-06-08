@@ -1,14 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { 
-  HomePage, 
-  HowItWorksPage, 
-  UploadPage, 
-  AnalyzingPage, 
-  ResultsPage,
-  NotFoundPage
+  NotFoundPage,
+  VinEntryPage,
+  CarParametersPage
 } from './pages';
+import PhotoInstructionsPage from './pages/PhotoInstructionsPage';
+import PhotoUploadPage from './pages/PhotoUploadPage';
+import AnalyzingPage from './pages/AnalyzingPage';
+import AnalysisResultsPage from './pages/AnalysisResultsPage';
 import { ErrorProvider } from './components/UI';
+import { AnalysisProvider } from './context/AnalysisContext';
 import './App.css';
 
 // Create a client
@@ -25,23 +27,27 @@ const queryClient = new QueryClient({
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <VinEntryPage />,
   },
   {
-    path: '/how-it-works',
-    element: <HowItWorksPage />,
+    path: '/car-parameters/:analyseId',
+    element: <CarParametersPage />,
   },
   {
-    path: '/upload',
-    element: <UploadPage />,
+    path: '/photo-instructions/:analyseId',
+    element: <PhotoInstructionsPage />,
   },
   {
-    path: '/analyzing',
+    path: '/upload-photos/:analyseId',
+    element: <PhotoUploadPage />,
+  },
+  {
+    path: '/analyzing/:analyseId',
     element: <AnalyzingPage />,
   },
   {
-    path: '/results',
-    element: <ResultsPage />,
+    path: '/analysis-results/:analyseId',
+    element: <AnalysisResultsPage />,
   },
   {
     path: '*',
@@ -55,7 +61,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorProvider>
-        <RouterProvider router={router} />
+        <AnalysisProvider>
+          <RouterProvider router={router} />
+        </AnalysisProvider>
       </ErrorProvider>
     </QueryClientProvider>
   );
