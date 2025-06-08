@@ -3,7 +3,7 @@ import { useCarVisualization } from '../../hooks/useCarVisualization';
 import type { CarPartType, CarParts } from '../../types/api.types';
 
 interface CarVisualizationProps {
-  highlightedPart?: CarPartType | null;
+  highlightedPart: CarPartType | string | null;
   onPartHover?: (part: CarPartType | null) => void;
   selectedView?: 'front' | 'rear' | 'left' | 'right' | 'top';
   damages?: CarParts;
@@ -73,8 +73,8 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
   };
 
   // Determine if a part has damage
-  const getPartDamage = (partId: CarPartType) => {
-    // return mockDamages.find(d => d.part === partId);
+  const getPartDamage = (partId: CarPartType | string) => {
+    return damages[partId] || null;
   };
 
   // Get color based on damage severity
@@ -82,16 +82,13 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
     const damage = getPartDamage(partId);
     if (!damage) return 'border-gray-300';
     
-    switch (damage.severity) {
-      case 'Легкие':
+    if (damage.quality >= 3)
         return 'border-yellow-400';
-      case 'Средние':
+    if (damage.quality >= 2)
         return 'border-orange-400';
-      case 'Серьезные':
+    if (damage.quality >= 0)
         return 'border-red-500';
-      default:
-        return 'border-gray-300';
-    }
+    return 'border-gray-300';
   };  // Views configuration
   const viewConfiguration: Record<string, { title: string, viewBox: string, parts: CarPartType[] }> = {
     top: {
@@ -194,7 +191,7 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
             <strong>{highlightedPart.replace(/-/g, ' ')}</strong>
             {getPartDamage(highlightedPart) && (
               <div className="text-xs text-red-500 mt-1">
-                {getPartDamage(highlightedPart)?.description}
+                {getPartDamage(highlightedPart)?.detailed}
               </div>
             )}
           </div>

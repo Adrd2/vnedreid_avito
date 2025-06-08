@@ -7,13 +7,13 @@ import { CarVisualization } from '../components/Car';
 import { DamageCard } from '../components/DamageCard';
 import { useAnalysisProcess } from '../hooks/useAnalysisProcess';
 import { mockAnalysisResponse, mockOverallAssessment } from '../data/mockData';
-import type { CarPartType, AnalysisResponse } from '../types/api.types';
+import type { CarPartType } from '../types/api.types';
 
 const AnalysisResultsPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
   const navigate = useNavigate();
   const { getAnalysisResults, setAnalyseId, isLoading, error } = useAnalysisProcess();
-  const [hoveredPart, setHoveredPart] = useState<CarPartType | null>(null);
+  const [hoveredPart, setHoveredPart] = useState<CarPartType | string | null>(null);
   const [overall] = useState(mockOverallAssessment);
   const [selectedView, setSelectedView] = useState<'front' | 'rear' | 'left' | 'right' | 'top'>('top');
 

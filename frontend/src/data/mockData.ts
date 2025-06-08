@@ -1,9 +1,7 @@
 import type { 
   CarParameters, 
   CreateAnalysisResponse, 
-  AnalysisResponse, 
   Analysis,
-  DamageType
 } from '../types/api.types';
 
 /**

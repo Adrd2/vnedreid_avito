@@ -2,17 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import type { CarPartType, CarParts } from '../types/api.types';
 
 /**
- * Interface for car part with position and hover state
- */
-interface CarPartWithState {
-  id: CarPartType;
-  svgPath: string;
-  isHovered: boolean;
-  hasDamage: boolean;
-  damageDescription?: string;
-}
-
-/**
  * Custom hook for car visualization
  */
 export const useCarVisualization = (carPartsData?: CarParts) => {

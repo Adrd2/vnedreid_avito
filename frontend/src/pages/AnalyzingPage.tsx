@@ -7,6 +7,7 @@ import AnalyzingImage from '/assets/Analyzing.png';
 
 const AnalyzingPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
+  // @ts-ignore
   const { progress, status, startAnalysis } = useFakeAnalysisProcess(
     analyseId ? parseInt(analyseId, 10) : null
   );
@@ -67,7 +68,8 @@ const AnalyzingPage: React.FC = () => {
             className="absolute h-1 bg-blue-500 left-0 top-4 z-0 transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
-          
+
+          {/* @ts-ignore */}
           {steps.map((step, index) => (
             <div 
               key={step.id} 

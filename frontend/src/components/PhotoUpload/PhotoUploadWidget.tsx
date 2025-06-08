@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 
 interface PhotoUploadWidgetProps {
-  id: string;
   title: string;
   wireframe: string;
   preview: string;
@@ -10,7 +9,6 @@ interface PhotoUploadWidgetProps {
 }
 
 const PhotoUploadWidget: React.FC<PhotoUploadWidgetProps> = ({
-  id,
   title,
   wireframe,
   preview,

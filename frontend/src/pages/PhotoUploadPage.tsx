@@ -113,7 +113,6 @@ const PhotoUploadPage: React.FC = () => {
               transition={{ duration: 0.5 }}
             >
               <PhotoUploadWidget
-                id={zone.id}
                 title={zone.title}
                 wireframe={zone.wireframe}
                 preview={previews[zone.id]}

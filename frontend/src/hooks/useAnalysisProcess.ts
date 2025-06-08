@@ -213,9 +213,7 @@ export const useAnalysisProcess = () => {
       } catch (err) {
         // Fall back to mock data if API fails
         console.warn('Using mock data for getAnalysisResults', err);
-        const response = mockAnalysisResponse;
-        setAnalysisResult(response);
-        return response;
+        return null;
       }
     } catch (err) {
       setError('Failed to get analysis results. Please try again.');
