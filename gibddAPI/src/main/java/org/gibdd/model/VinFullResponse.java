@@ -14,7 +14,7 @@ public class VinFullResponse {
 
     private int ownersCount;
     private boolean hasRestriction;
-    private boolean isWanted;
+    private boolean wantedCar;
     private boolean hasAccidents;
     private boolean hasFines;
     private double finesAmount;

@@ -115,7 +115,10 @@ public class VinMockController {
             wantedResp.setRecords(Collections.emptyList());
         }
         res.setWanted(wantedResp);
-        res.setWanted(wanted);
+        res.setWanted(wantedResp);  // <- объект типа WantedResponse
+        res.setWantedCar(wanted);    // <- булевый флаг
+
+
 
         // ДТП
         DtpResponse dtp = new DtpResponse();

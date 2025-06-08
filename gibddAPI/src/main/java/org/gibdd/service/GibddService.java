@@ -33,7 +33,10 @@ public class GibddService {
         result.setGibddv2(fetchData(vin, "gibddv2", GibddV2Response.class, token));
 
         result.setWanted(fetchData(vin, "wanted", WantedResponse.class, token));
-        result.setWanted(result.getWanted() != null && result.getWanted().isWanted());
+        WantedResponse wanted = fetchData(vin, "wanted", WantedResponse.class, token);
+        result.setWanted(wanted);
+        result.setWantedCar(wanted != null && wanted.isWanted());
+
 
         result.setDtp(fetchData(vin, "dtp", DtpResponse.class, token));
         result.setHasAccidents(result.getDtp() != null && result.getDtp().hasAccidents());
