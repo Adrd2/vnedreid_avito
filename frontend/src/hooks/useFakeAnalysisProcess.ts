@@ -52,40 +52,6 @@ export const useFakeAnalysisProcess = (analyseId: number | null) => {
         return Math.min(Math.floor(newProgress), 95);
       });
     }, 500);
-    
-    // Set up a timeout for completion
-    timeoutRef.current = setTimeout(() => {
-      const elapsedTime = Date.now() - startTime;
-      
-      if (elapsedTime < targetDuration) {
-        // If we haven't waited long enough, wait for the remaining time
-        const remainingTime = targetDuration - elapsedTime;
-        timeoutRef.current = setTimeout(() => {
-          completeAnalysis();
-        }, remainingTime);
-      } else {
-        completeAnalysis();
-      }
-    }, 8000); // After 8 seconds, check if we've reached the minimum time
-  };
-  
-  // Complete the analysis process
-  const completeAnalysis = () => {
-    // Clear any running interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
-    // Jump to 100%
-    setProgress(100);
-    setStatus('success');
-    setIsAnalyzing(false);
-    
-    // Navigate to results page
-    setTimeout(() => {
-      navigate(`/analysis-results/${analyseId}`);
-    }, 1000);
   };
 
   return {

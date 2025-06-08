@@ -15,7 +15,7 @@ const CarParametersPage: React.FC = () => {
   const { carParams, updateCarParameters, setAnalyseId, isLoading, error, setCarParams } = useAnalysisProcess();
   const [localCarParams, setLocalCarParams] = useState<CarParameters | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [vinNumber, setVinNumber] = useState<string>(state.vin);
+  const [vinNumber, setVinNumber] = useState<string>("");
 
   useEffect (() => {
     if (analyseId) {
@@ -23,7 +23,9 @@ const CarParametersPage: React.FC = () => {
     }
     if (state.vin_check_data) {
       setCarParams(state.vin_check_data);
-      setVinNumber(state.vin_check_data);
+    }
+    if (state.vin) {
+      setVinNumber(state.vin);
     }
   }, [])
 

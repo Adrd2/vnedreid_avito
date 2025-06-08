@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Layout } from '../components/Layout';
 import { useFakeAnalysisProcess } from '../hooks/useFakeAnalysisProcess';
+import { useAnalysisProcess } from '../hooks/useAnalysisProcess';
 import AnalyzingImage from '/assets/Analyzing.png';
+import { useNavigate } from 'react-router-dom';
 
 const AnalyzingPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
@@ -11,10 +13,24 @@ const AnalyzingPage: React.FC = () => {
   const { progress, status, startAnalysis } = useFakeAnalysisProcess(
     analyseId ? parseInt(analyseId, 10) : null
   );
+  const { getAnalysisResults, setAnalyseId } = useAnalysisProcess();
+  const navigate = useNavigate();
 
   // Start the analysis when component mounts
   useEffect(() => {
     startAnalysis();
+
+    if (analyseId) {
+      setAnalyseId(parseInt(analyseId, 10));
+      
+      getAnalysisResults().then((response => {
+        navigate(`/analysis-results/${analyseId}`, {
+          state: {
+            response: response,
+          }
+        });
+      }));
+    }
   }, []);
 
   // Analysis steps

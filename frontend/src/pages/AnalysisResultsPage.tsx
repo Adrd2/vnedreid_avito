@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
 import { Button } from '../components/UI';
@@ -11,12 +11,19 @@ import type { CarPartType } from '../types/api.types';
 
 const AnalysisResultsPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
+  const { state } = useLocation();
   const navigate = useNavigate();
   const { getAnalysisResults, setAnalyseId, isLoading, error } = useAnalysisProcess();
   const [hoveredPart, setHoveredPart] = useState<CarPartType | string | null>(null);
-  const [overall] = useState(mockOverallAssessment);
+  const [overall, setOverAll] = useState(mockOverallAssessment);
   // @ts-ignore
   const [selectedView, setSelectedView] = useState<'front' | 'rear' | 'left' | 'right' | 'top'>('top');
+
+  useEffect(() => {
+    if (state.response) {
+      setOverAll(state.response);
+    }
+  }, [])
 
   // Set the analyseId on component mount
   useEffect(() => {

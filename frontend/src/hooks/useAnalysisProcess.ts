@@ -215,7 +215,7 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
         
         const response = result.data;
         setAnalysisResult(response);
-        return response;
+        return response.details_analize;
       } catch (err) {
         // Fall back to mock data if API fails
         console.warn('Using mock data for getAnalysisResults', err);
