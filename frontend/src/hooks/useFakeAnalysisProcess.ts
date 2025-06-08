@@ -7,7 +7,7 @@ import { mockAnalysisResponse } from '../data/mockData';
  * @param analyseId - Analysis ID
  */
 export const useFakeAnalysisProcess = (analyseId: number | null) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -35,8 +35,8 @@ export const useFakeAnalysisProcess = (analyseId: number | null) => {
     setStatus('loading');
     
     // Simulate the analysis process with a minimum of 10 seconds
-    const startTime = Date.now();
-    const targetDuration = 10000; // 10 seconds minimum
+    // const startTime = Date.now();
+    // const targetDuration = 10000; // 10 seconds minimum
     
     // First progress from 0 to 95% over 8 seconds
     intervalRef.current = setInterval(() => {
