@@ -16,7 +16,6 @@ public class VinController {
 
     private final GibddService gibddService;
 
-
     @GetMapping("/{vin}")
     public ResponseEntity<VinFullResponse> getMockResponse(@PathVariable int code) {
         VinFullResponse response = switch (code) {
