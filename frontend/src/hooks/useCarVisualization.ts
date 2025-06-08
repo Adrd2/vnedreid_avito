@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { CarPartType } from '../types/api.types';
-import { mockDamages } from '../data/mockData';
+import type { CarPartType, CarParts } from '../types/api.types';
 
 /**
  * Interface for car part with position and hover state
@@ -16,7 +15,7 @@ interface CarPartWithState {
 /**
  * Custom hook for car visualization
  */
-export const useCarVisualization = () => {
+export const useCarVisualization = (carPartsData?: CarParts) => {
   const [hoveredPart, setHoveredPart] = useState<CarPartType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [allCarParts, setAllCarParts] = useState<CarPartType[]>([]);
@@ -69,24 +68,24 @@ export const useCarVisualization = () => {
 
   // Get damaged parts from mock data
   const damagedParts = useMemo(() => {
-    return mockDamages.map(damage => ({
-      part: damage.part,
-      description: damage.description,
-      severity: damage.severity
-    }));
+    return carPartsData || {};
   }, []);
 
   // Create car parts list with hover state
   const carParts = useMemo(() => {
     return allCarParts.map(partId => {
-      const damage = damagedParts.find(d => d.part === partId);
+      const damage = damagedParts[partId];
       return {
         id: partId,
         svgPath: `/assets/model_parts/${partId}.svg`,
         isHovered: hoveredPart === partId,
         hasDamage: !!damage,
-        damageDescription: damage?.description,
-        damageSeverity: damage?.severity
+        damageDescription: damage?.detailed?.join(', '),
+        damageSeverity: damage?.quality ?
+          damage.quality < 1 ? 'Легкие' :
+          damage.quality < 2 ? 'Средние' :
+          damage.quality < 3 ? 'Серьезные' : 'Критические' :
+          'Нет повреждений'
       };
     });
   }, [allCarParts, hoveredPart, damagedParts]);

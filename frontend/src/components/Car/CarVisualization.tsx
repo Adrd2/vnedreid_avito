@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useCarVisualization } from '../../hooks/useCarVisualization';
-import { mockDamages } from '../../data/mockData';
-import type { CarPartType } from '../../types/api.types';
+import type { CarPartType, CarParts } from '../../types/api.types';
 
 interface CarVisualizationProps {
   highlightedPart?: CarPartType | null;
   onPartHover?: (part: CarPartType | null) => void;
   selectedView?: 'front' | 'rear' | 'left' | 'right' | 'top';
+  damages?: CarParts;
 }
 
 const CarVisualization: React.FC<CarVisualizationProps> = ({
   highlightedPart,
   onPartHover,
-  selectedView = 'top'
+  selectedView = 'top',
+  damages = {}
 }) => {
   const { 
     carParts, 
     isLoading,
     handlePartMouseEnter: defaultHandlePartMouseEnter, 
     handlePartMouseLeave: defaultHandlePartMouseLeave 
-  } = useCarVisualization();
+  } = useCarVisualization(damages);
   
   const [svgElements, setSvgElements] = useState<Record<string, React.ReactNode>>({});
 
@@ -31,7 +32,7 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
       for (const part of carParts) {
         try {
           // Dynamic import of SVG files
-          const svgModule = await import(`../../../assets/model_parts/${part.id}.svg`);
+          const svgModule = await import(`../../../public/assets/model_parts/${part.id}.svg`);
           const svgUrl = svgModule.default;
           
           loadedElements[part.id] = (
@@ -73,7 +74,7 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
 
   // Determine if a part has damage
   const getPartDamage = (partId: CarPartType) => {
-    return mockDamages.find(d => d.part === partId);
+    // return mockDamages.find(d => d.part === partId);
   };
 
   // Get color based on damage severity
@@ -152,7 +153,7 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
         {/* Car silhouette */}
         <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">
           <img 
-            src={`../../../assets/wireframes/${selectedView.charAt(0).toUpperCase() + selectedView.slice(1)}.png`} 
+            src={`../../../public/assets/wireframes/${selectedView.charAt(0).toUpperCase() + selectedView.slice(1)}.png`} 
             alt={`${selectedView} view wireframe`}
             className="opacity-10 max-h-full"
           />

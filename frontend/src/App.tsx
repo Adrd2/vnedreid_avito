@@ -54,7 +54,7 @@ const router = createBrowserRouter([
     element: <NotFoundPage />,
   },
 ], {
-  basename: '/vnedraid-frontend'
+  basename: '/'
 });
 
 function App() {

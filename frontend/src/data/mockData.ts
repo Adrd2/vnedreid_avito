@@ -2,7 +2,7 @@ import type {
   CarParameters, 
   CreateAnalysisResponse, 
   AnalysisResponse, 
-  CarPartType,
+  Analysis,
   DamageType
 } from '../types/api.types';
 
@@ -47,84 +47,51 @@ export const mockCreateAnalysisResponse: CreateAnalysisResponse = {
 };
 
 /**
- * Damage severity levels
- */
-export type DamageSeverity = 'Легкие' | 'Средние' | 'Серьезные';
-
-/**
- * Mock damage data structure for visualization
- */
-export interface DamageInfo {
-  part: CarPartType;
-  type: DamageType[];
-  severity: DamageSeverity;
-  description: string;
-}
-
-/**
- * Mock damages for display
- */
-export const mockDamages: DamageInfo[] = [
-  {
-    part: 'Right-Back-door',
-    type: ['Scratch'],
-    severity: 'Легкие',
-    description: 'Царапина/Скол'
-  },
-  {
-    part: 'Right-Quarter-panel',
-    type: ['Dent', 'Paint chip'],
-    severity: 'Легкие',
-    description: 'Царапина/Вмятина'
-  },
-  {
-    part: 'Back-bumper',
-    type: ['Scratch', 'Dent'],
-    severity: 'Легкие',
-    description: 'Царапина/Скол'
-  }
-];
-
-/**
  * Mock analysis response
  */
-export const mockAnalysisResponse: AnalysisResponse = {
-  success: true,
-  details_analize: {
-    quality: 0.87,
-    car_parts: {
-      'Right-Back-door': {
-        quantity: 1,
-        defects: ['Scratch'],
-        detailed: ['Царапина/Скол']
-      },
-      'Right-Quarter-panel': {
-        quantity: 1,
-        defects: ['Dent', 'Paint chip'],
-        detailed: ['Царапина/Вмятина']
-      },
-      'Back-bumper': {
-        quantity: 1,
-        defects: ['Scratch', 'Dent'],
-        detailed: ['Царапина/Скол']
-      }
+export const mockAnalysisResponse: Analysis = {
+  quality: 0.87,
+  car_parts: {
+    'Right-Back-door': {
+      quality: 1,
+      defects: ['Scratch'],
+      detailed: ['Царапина/Скол']
     },
-    created_at: new Date().toISOString()
-  }
+    'Right-Quarter-panel': {
+      quality: 2,
+      defects: ['Dent', 'Paint chip'],
+      detailed: ['Царапина/Вмятина']
+    },
+    'Back-bumper': {
+      quality: 4,
+      defects: ['Scratch', 'Dent'],
+      detailed: ['Царапина/Скол']
+    }
+  },
+  created_at: new Date().toISOString()
 };
-
-/**
- * Overall assessment based on damages
- */
-export interface OverallAssessment {
-  severity: DamageSeverity;
-  creditEligible: boolean;
-}
 
 /**
  * Get mock overall assessment
  */
-export const mockOverallAssessment: OverallAssessment = {
-  severity: 'Легкие',
-  creditEligible: true
+export const mockOverallAssessment: Analysis = {
+    quality: 0.87,
+    car_parts: {
+      'Right-Back-door': {
+        quality: 1,
+        defects: ['Scratch'],
+        detailed: ['Царапина', 'Скол']
+      },
+      'Right-Quarter-panel': {
+        quality: 2,
+        defects: ['Dent', 'Paint chip'],
+        detailed: ['Крупная вмятина', 'Скол на краске']
+      },
+      'Back-bumper': {
+        quality: 4,
+        defects: ['Scratch', 'Dent'],
+        detailed: ['Сильная царапина', 'Скол']
+      }
+    },
+    created_at: new Date().toISOString()
 };

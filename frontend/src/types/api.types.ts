@@ -56,7 +56,7 @@ export type DamageType = 'Dent' | 'Cracked' | 'Scratch' | 'Flaking' | 'Broken pa
  * Car part information
  */
 export interface CarPart {
-  quantity: number;
+  quality: number;
   metadata?: any[];
   defects: DamageType[];
   detailed: string[];

@@ -14,7 +14,7 @@ const AnalyzingPage: React.FC = () => {
   // Start the analysis when component mounts
   useEffect(() => {
     startAnalysis();
-  }, [startAnalysis]);
+  }, []);
 
   // Analysis steps
   const steps = [
