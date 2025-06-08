@@ -190,11 +190,7 @@ async def upload_photos(
 ):
     try:
         # Проверяем соответствие количества фото и позиций
-        print(positions)
-        sep_positions = positions[0]
-        print(sep_positions)
-        sep_positions = [pos.strip() for pos in sep_positions.split(',')]
-        print(sep_positions)
+        sep_positions = positions
         if len(photos) != len(sep_positions):
             raise ValueError("Количество фотографий и позиций должно совпадать")
         

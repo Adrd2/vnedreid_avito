@@ -1,26 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Layout } from '../components/Layout';
 import { useAnalysisProcess } from '../hooks/useAnalysisProcess';
 import { availableCarModels, mockCarParameters } from '../data/mockData';
 import type { CarParameters } from '../types/api.types';
+import { useNavigate } from 'react-router-dom';
 import HeroImage from '/assets/Hero.png';
 
 const CarParametersPage: React.FC = () => {
-  const { analyseId } = useParams<{ analyseId: string }>();
   const navigate = useNavigate();
-  const { carParams, updateCarParameters, setAnalyseId, isLoading, error } = useAnalysisProcess();
+  const { analyseId } = useParams();
+  const { state } = useLocation();
+  const { carParams, updateCarParameters, setAnalyseId, isLoading, error, setCarParams } = useAnalysisProcess();
   const [localCarParams, setLocalCarParams] = useState<CarParameters | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [vinNumber] = useState<string>("693285732835932875");
+  const [vinNumber, setVinNumber] = useState<string>(state.vin);
 
-  console.log(carParams)
+  useEffect (() => {
+    if (analyseId) {
+      setAnalyseId(+analyseId);
+    }
+    if (state.vin_check_data) {
+      setCarParams(state.vin_check_data);
+      setVinNumber(state.vin_check_data);
+    }
+  }, [])
 
   // Set the analyseId on component mount
   useEffect(() => {
     if (analyseId) {
-      setAnalyseId(parseInt(analyseId, 10));
+      setAnalyseId(+analyseId);
     } else {
       navigate('/');
     }
@@ -30,6 +40,8 @@ const CarParametersPage: React.FC = () => {
   useEffect(() => {
     if (carParams) {
       setLocalCarParams(carParams);
+
+      console.log(carParams)
       
       // Set available models for the selected brand
       if (carParams.brand && availableCarModels[carParams.brand]) {
@@ -260,7 +272,7 @@ const CarParametersPage: React.FC = () => {
                           className="block border-none rounded-lg bg-gray-100 text-sm appearance-none focus:outline-none"
                         >
                           {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                            <option key={year} value={year}>{year} г.</option>
+                            <option key={year} value={year}>{year}</option>
                           ))}
                         </select>
                       </div>
@@ -307,8 +319,8 @@ const CarParametersPage: React.FC = () => {
                           onChange={(e) => handleChange(e, 'engine_type')}
                           className="block border-none rounded-lg bg-gray-100 text-sm appearance-none focus:outline-none"
                         >
-                          <option value="Бензиновый">Бензиновый</option>
-                          <option value="Дизельный">Дизельный</option>
+                          <option value="Бензиновый">Бензин</option>
+                          <option value="Дизельный">Дизель</option>
                           <option value="Гибридный">Гибрид</option>
                           <option value="Электрический">Электрический</option>
                         </select>

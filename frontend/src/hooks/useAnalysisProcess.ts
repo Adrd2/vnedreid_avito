@@ -45,7 +45,6 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
       try {
         // Try to call the real API
         const apiResponse = await apiService.createAnalyse(vin);
-        console.log(apiResponse)
         response = apiResponse.data;
       } catch (err) {
         // Fall back to mock data if API fails
@@ -53,16 +52,17 @@ export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
         response = mockCreateAnalysisResponse;
       }
 
-      console.log(response);
-      console.log(response.vin_check_data);
-      
       setAnalyseId(response.analyse_id);
       setCarParams(response.vin_check_data);
 
-      console.log(carParams);
-
       // Navigate to car parameters page
-      navigate(`/car-parameters/${response.analyse_id}`);
+      navigate(`/car-parameters/${response.analyse_id}`,
+      {
+        state: {
+          vin: response.vin,
+          vin_check_data: response.vin_check_data,
+        }
+      });
       return response;
     } catch (err) {
       setError('Failed to create analysis. Please try again.');

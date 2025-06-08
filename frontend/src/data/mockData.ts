@@ -17,7 +17,8 @@ export const availableCarModels: Record<string, string[]> = {
   'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'HR-V'],
   'Ford': ['Focus', 'Fiesta', 'Kuga', 'Explorer', 'Mustang'],
   'Hyundai': ['Solaris', 'Creta', 'Tucson', 'Santa Fe', 'i30'],
-  'Kia': ['Rio', 'Sportage', 'Cerato', 'Sorento', 'K5']
+  'Kia': ['Rio', 'Sportage', 'Cerato', 'Sorento', 'K5'],
+  "MockCar": ["2025"]
 };
 
 /**
@@ -41,6 +42,7 @@ export const mockCarParameters: CarParameters = {
  */
 export const mockCreateAnalysisResponse: CreateAnalysisResponse = {
   analyse_id: 12345,
+  vin: "12",
   vin_check_data: mockCarParameters
 };
 
