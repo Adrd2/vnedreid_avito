@@ -30,7 +30,7 @@ export interface CarParameters {
  */
 export interface CreateAnalysisResponse {
   analyse_id: number;
-  car_params: CarParameters;
+  vin_check_data: CarParameters;
 }
 
 /**

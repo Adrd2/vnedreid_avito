@@ -10,9 +10,12 @@ import HeroImage from '/assets/Hero.png';
 const CarParametersPage: React.FC = () => {
   const { analyseId } = useParams<{ analyseId: string }>();
   const navigate = useNavigate();
-  const { carParams, updateCarParameters, setAnalyseId, isLoading, error } = useAnalysisProcess();  const [localCarParams, setLocalCarParams] = useState<CarParameters | null>(null);
+  const { carParams, updateCarParameters, setAnalyseId, isLoading, error } = useAnalysisProcess();
+  const [localCarParams, setLocalCarParams] = useState<CarParameters | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [vinNumber] = useState<string>("693285732835932875");
+
+  console.log(carParams)
 
   // Set the analyseId on component mount
   useEffect(() => {

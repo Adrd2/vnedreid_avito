@@ -12,9 +12,9 @@ import type {
 /**
  * Custom hook to manage the analysis process
  */
-export const useAnalysisProcess = () => {
+export const useAnalysisProcess = (entryAnalyseId: string | null = null) => {
   const navigate = useNavigate();
-  const [analyseId, setAnalyseId] = useState<number | null>(null);
+  const [analyseId, setAnalyseId] = useState<number | null>(entryAnalyseId === null ? null : +entryAnalyseId);
   const [carParams, setCarParams] = useState<CarParameters | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,16 +45,22 @@ export const useAnalysisProcess = () => {
       try {
         // Try to call the real API
         const apiResponse = await apiService.createAnalyse(vin);
+        console.log(apiResponse)
         response = apiResponse.data;
       } catch (err) {
         // Fall back to mock data if API fails
         console.warn('Using mock data for createAnalysis', err);
         response = mockCreateAnalysisResponse;
       }
+
+      console.log(response);
+      console.log(response.vin_check_data);
       
       setAnalyseId(response.analyse_id);
-      setCarParams(response.car_params);
-      
+      setCarParams(response.vin_check_data);
+
+      console.log(carParams);
+
       // Navigate to car parameters page
       navigate(`/car-parameters/${response.analyse_id}`);
       return response;
