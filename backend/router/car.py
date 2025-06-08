@@ -27,7 +27,8 @@ async def create_analyse(analyse_data: SCreateAnalyse):
             "steering_wheel": "Левый",
             "engine_volume": "1.5 л",
             "engine_type": "Гибрид",
-            "body_type": "Внедорожник 5-дв."
+            "body_type": "Внедорожник 5-дв.",
+            "vin": vin
         }
         return {"success": True, "analyse_id": analyse_id, "vin_check_data": data}
     except ValueError as e:

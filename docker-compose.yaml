@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: avitoDb
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -17,11 +17,24 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://app:password@db:5432/appdb
+      DATABASE_URL: postgresql://vnedreid:password@db:5432/avitoDb
     depends_on:
       - db
     ports:
       - "8000:8000"
+
+  cv-model:
+    build:
+      context: ./backend_model
+      dockerfile: Dockerfile
+    environment:
+      MODEL_PATH: /app/models/model.pth  # если нужно
+    ports:
+      - "4070:4070"
+    depends_on:
+      - db
+    restart: unless-stopped
+
 
   frontend:
     build:
@@ -34,8 +47,8 @@ services:
 
   vin-microservice:
     build:
-      context: ./vin-microservice
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gibddAPI/Dockerfile
     environment:
       GIBDD_TOKEN: API_TOKEN
     ports:
