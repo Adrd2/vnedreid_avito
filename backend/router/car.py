@@ -2,6 +2,9 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, status, Form
 from repositories.car import CarRepository
 from typing import List
 from schemas.car import SAnalyseResponse, SCreateAnalyse
+from models.car import AnalysisMetadataOrm
+from database import new_session
+from sqlalchemy import select
 
 
 
@@ -17,20 +20,38 @@ router = APIRouter(
 async def create_analyse(analyse_data: SCreateAnalyse):
     try:
         analyse_id = await CarRepository.create_analyse(analyse_data.vin)
-        data = {
-            "brand": "Nissan",
-            "model": "X-Trail 1.5 AT",
-            "production_year": "2024г.",
-            "transmission": "Автомат",
-            "drive_type": "Полный",
-            "color": "Белый",
-            "steering_wheel": "Левый",
-            "engine_volume": "1.5 л",
-            "engine_type": "Гибрид",
-            "body_type": "Внедорожник 5-дв.",
-            "vin": vin
+        
+        # Получаем данные для ответа клиенту
+        async with new_session() as session:
+            query = select(AnalysisMetadataOrm).where(
+                AnalysisMetadataOrm.analysis_id == analyse_id
+            )
+            result = await session.execute(query)
+            metadata = {item.key: item.value for item in result.scalars()}
+            
+            # Формируем ответ в том же формате, что и раньше
+            response_data = {
+                "brand": metadata.get("brand", "Неизвестно"),
+                "model": metadata.get("model", "Неизвестно"),
+                "production_year": metadata.get("year", "Неизвестно"),
+                "color": metadata.get("color", "Неизвестно"),
+                "engine_volume": metadata.get("engine_volume", "Неизвестно"),
+                "engine_type": "Неизвестно",  # Можно добавить в метаданные
+                "transmission": "Неизвестно",  # Можно добавить в метаданные
+                "drive_type": "Неизвестно",   # Можно добавить в метаданные
+                "steering_wheel": "Неизвестно", # Можно добавить в метаданные
+                "body_type": metadata.get("body_type", "Неизвестно"),
+                "accidents_history": metadata.get("accidents_history", "Нет данных"),
+                "restrictions": metadata.get("restrictions", "Нет ограничений"),
+                "last_technical_inspection": metadata.get("last_technical_inspection", "Нет данных"),
+                "total_fines_amount": metadata.get("total_fines_amount", "0")
+            }
+            
+        return {
+            "success": True,
+            "analyse_id": analyse_id,
+            "vin_check_data": response_data
         }
-        return {"success": True, "analyse_id": analyse_id, "vin_check_data": data}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
