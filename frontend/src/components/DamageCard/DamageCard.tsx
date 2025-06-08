@@ -23,23 +23,30 @@ const DamageCard: React.FC<DamageCardProps> = ({
     // Create gradient from gray to yellow to red based on damage quality
     if (quality < 1) {
       // Severe damage - red gradient
-      return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200 text-red-800';
+      return 'border-red-200 text-red-800';
     } else if (quality < 2) {
       // Moderate damage - orange gradient
-      return 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 text-orange-800';
+      return 'border-orange-200 text-orange-800';
     } else if (quality < 3) {
       // Light damage - yellow gradient
-      return 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200 text-yellow-800';
+      return 'border-yellow-200 text-yellow-800';
     } else {
       // No significant damage - gray gradient
-      return 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 text-gray-800';
+      return 'border-gray-200 text-gray-800';
     }
   };
 
   const getDamageIcon = (quality: number): string => {
-    const colors = ['bg-yellow-500', 'bg-orange-500', 'bg-red-500'];
-    const color = colors[Math.round(Math.min(quality, colors.length - 1))];
-    return color;
+    // Return icon class based on damage quality
+    if (quality < 1) {
+      return 'bg-red-500';
+    } else if (quality < 2) {
+      return 'bg-orange-500';
+    } else if (quality < 3) {
+      return 'bg-yellow-500';
+    } else {
+      return 'bg-gray-500';
+    }
   };
 
   const getDefectText = (defect: string): string => {
@@ -100,7 +107,7 @@ const DamageCard: React.FC<DamageCardProps> = ({
   return (
     <div 
       className={`bg-white border rounded-lg p-4 transition-all duration-300 ${
-        isHovered ? 'ring-2 ring-blue-400 shadow-md' : 'shadow-sm'
+        isHovered ? 'shadow-md' : 'shadow-sm'
       } ${getDamageGradient(damage.quality)}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -110,9 +117,9 @@ const DamageCard: React.FC<DamageCardProps> = ({
           {index + 1}
         </div>
         <div className="ml-3">
-          <h4 className="font-medium capitalize">{getPartText(partId)}</h4>
-          <p className="text-sm mt-1">{damage.defects.map(defect => getDefectText(defect)).join(' / ')}</p>
-          <p className="text-sm mt-2">
+          <h4 className="font-medium capitalize text-left">{getPartText(partId)}</h4>
+          <p className="text-sm mt-1 text-left">{damage.defects.map(defect => getDefectText(defect)).join(' / ')}</p>
+          <p className="text-sm mt-2 text-left">
             {damage.quality >= 3 ? 'Лёгкие повреждения' : 'Серьёзные повреждения'}
           </p>
         </div>

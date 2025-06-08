@@ -90,6 +90,46 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
         return 'border-red-500';
     return 'border-gray-300';
   };  // Views configuration
+
+  const getPartText = (partId: string): string => {
+    const partsMap: Record<string, string> = {
+      'Windshield': 'Лобовое стекло',
+      'Back-windshield': 'Заднее стекло',
+      'Left-Front-window': 'Левое переднее окно',
+      'Left-Back-window': 'Левое заднее окно',
+      'Left-Front-door': 'Левая передняя дверь',
+      'Left-Back-door': 'Левая задняя дверь',
+      'Left-Front-wheel': 'Левое переднее колесо',
+      'Left-Back-wheel': 'Левое заднее колесо',
+      'Right-Front-window': 'Правое переднее окно',
+      'Right-Back-window': 'Правое заднее окно',
+      'Right-Front-door': 'Правая передняя дверь',
+      'Right-Back-door': 'Правая задняя дверь',
+      'Right-Front-wheel': 'Правое переднее колесо',
+      'Right-Back-wheel': 'Правое заднее колесо',
+      'Front-bumper': 'Передний бампер',
+      'Back-bumper': 'Задний бампер',
+      'Left-Headlight': 'Левая фара',
+      'Left-Tail-light': 'Левый задний фонарь',
+      'Right-Headlight': 'Правая фара',
+      'Right-Tail-light': 'Правый задний фонарь',
+      'Hood': 'Капот',
+      'Trunk': 'Багажник',
+      'License-plate': 'Номерной знак',
+      'Left-Mirror': 'Левое зеркало',
+      'Right-Mirror': 'Правое зеркало',
+      'Roof': 'Крыша',
+      'Grille': 'Решётка радиатора',
+      'Left-Rocker-panel': 'Левая пороговая панель',
+      'Left-Quarter-panel': 'Левое заднее крыло',
+      'Left-Fender': 'Левое переднее крыло',
+      'Right-Rocker-panel': 'Правая пороговая панель',
+      'Right-Quarter-panel': 'Правое заднее крыло',
+      'Right-Fender': 'Правое переднее крыло',
+    };
+    return partsMap[partId] || partId.replace(/-/g, ' ');
+  }
+
   const viewConfiguration: Record<string, { title: string, viewBox: string, parts: CarPartType[] }> = {
     top: {
       title: "Вид сверху",
@@ -188,10 +228,10 @@ const CarVisualization: React.FC<CarVisualizationProps> = ({
         {/* Legend or tooltip for hovered part */}
         {highlightedPart && (
           <div className="absolute bottom-2 right-2 bg-white px-3 py-2 rounded-md shadow-lg text-sm">
-            <strong>{highlightedPart.replace(/-/g, ' ')}</strong>
+            <strong>{getPartText(highlightedPart)}</strong>
             {getPartDamage(highlightedPart) && (
               <div className="text-xs text-red-500 mt-1">
-                {getPartDamage(highlightedPart)?.detailed}
+                {getPartDamage(highlightedPart)?.detailed.join(', ')}
               </div>
             )}
           </div>
