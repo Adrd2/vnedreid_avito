@@ -1,171 +1,161 @@
-import { type FC, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-import { PageTransition, containerVariants, itemVariants, useError } from '../components/UI';
-import apiService from '../api/apiService';
+import { Layout } from '../components/Layout';
+import { useFakeAnalysisProcess } from '../hooks/useFakeAnalysisProcess';
+import AnalyzingImage from '/assets/Analyzing.png';
 
-const stages = [
-  {
-    id: 'recognize',
-    label: 'Распознавание ракурсов',
-    duration: 2000,
-  },
-  {
-    id: 'detect',
-    label: 'Поиск повреждений',
-    duration: 3000,
-  },
-  {
-    id: 'classify',
-    label: 'Классификация по типу',
-    duration: 2000,
-  },
-  {
-    id: 'report',
-    label: 'Формирование отчета',
-    duration: 1000,
-  },
-];
+const AnalyzingPage: React.FC = () => {
+  const { analyseId } = useParams<{ analyseId: string }>();
+  const { progress, status, startAnalysis } = useFakeAnalysisProcess(
+    analyseId ? parseInt(analyseId, 10) : null
+  );
 
-const AnalyzingPage: FC = () => {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('sessionId');
-  const navigate = useNavigate();
-  const { showError } = useError();
-  
-  const [currentStage, setCurrentStage] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
-  
+  // Start the analysis when component mounts
   useEffect(() => {
-    if (!sessionId) {
-      navigate('/upload');
-      return;
-    }
-    
-    // Simulate analysis stages
-    const runAnalysis = async () => {
-      // Sequentially progress through stages
-      for (let i = 0; i < stages.length; i++) {
-        setCurrentStage(i);
-        await new Promise((resolve) => setTimeout(resolve, stages[i].duration));
-      }
-      
-      // When all stages are complete, call the API
-      try {
-        const response = await apiService.analyzeDamage(sessionId);
-        setIsComplete(true);
-        
-        // Navigate to results page
-        setTimeout(() => {
-          navigate(`/results?analysisId=${response.data.analysisId}`);
-        }, 1000);
-      } catch (error) {
-        console.error('Error analyzing damage:', error);
-        showError('Произошла ошибка при анализе повреждений. Пожалуйста, попробуйте снова.');
-        navigate('/upload');
-      }
-    };
-    
-    runAnalysis();
-  }, [sessionId, navigate, showError]);
+    startAnalysis();
+  }, [startAnalysis]);
+
+  // Analysis steps
+  const steps = [
+    { id: 1, name: 'Распознавание ракурсов', active: progress >= 15 },
+    { id: 2, name: 'Поиск повреждений', active: progress >= 40 },
+    { id: 3, name: 'Классификация по типу', active: progress >= 65 },
+    { id: 4, name: 'Формирование отчета', active: progress >= 90 }
+  ];
+
+  // Analysis stats
+  const stats = [
+    { label: 'Алгоритм точности свыше', value: '70%' },
+    { label: 'Модель обучена на 50 000+ реальных случаев', value: '' },
+    { label: 'Среднее время обработки:', value: '10 секунд' }
+  ];
 
   return (
     <Layout>
-      <PageTransition>
-        <div className="max-w-2xl mx-auto text-center py-12">
-          <motion.h1
-            variants={itemVariants}
-            className="text-3xl font-bold mb-8"
-          >
-            Анализируем фото
-          </motion.h1>
+      <div className="max-w-4xl mx-auto text-center">
+        <motion.h1
+          className="text-3xl font-bold mb-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Анализируем фото
+        </motion.h1>
+
+        <motion.p
+          className="text-gray-600 mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          Обработка фото нейросетью
+        </motion.p>
+
+        {/* Analysis steps */}
+        <motion.div
+          className="flex items-center justify-between mb-16 relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          {/* Progress line */}
+          <div className="absolute h-1 bg-gray-200 left-0 right-0 top-4 z-0"></div>
           
-          <motion.div 
-            variants={itemVariants}
-            className="mb-8 text-lg text-gray-600"
-          >
-            <p className="mb-2">Обработка фото нейросетью</p>
-          </motion.div>
+          {/* Active progress line */}
+          <div 
+            className="absolute h-1 bg-blue-500 left-0 top-4 z-0 transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          ></div>
           
-          <motion.div 
-            variants={containerVariants}
-            className="mb-12"
-          >
-            {stages.map((stage, index) => {
-              // Determine stage status
-              const isActive = currentStage === index;
-              const isCompleted = currentStage > index;
-              
-              return (
-                <motion.div 
-                  key={stage.id} 
-                  variants={itemVariants}
-                  className="mb-6"
-                >
-                  <div className="flex items-center mb-2">
-                    <div 
-                      className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${
-                        isCompleted
-                          ? 'bg-green-500 text-white'
-                          : isActive
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-200 text-gray-400'
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xs">{index + 1}</span>
-                      )}
-                    </div>
-                    <span className={`${
-                      isActive ? 'text-primary-500 font-medium' : 
-                      isCompleted ? 'text-green-500 font-medium' : 'text-gray-500'
-                    }`}>
-                      {stage.label}
-                    </span>
-                    
-                    {isActive && (
-                      <motion.div 
-                        className="ml-2 w-4 h-4 rounded-full bg-primary-500"
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          opacity: [1, 0.8, 1] 
-                        }}
-                        transition={{ 
-                          repeat: Infinity,
-                          duration: 1.5
-                        }}
-                      />
-                    )}
-                  </div>
-                  
-                  {isActive && (
-                    <motion.div
-                      initial={{ width: '0%' }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: stage.duration / 1000 }}
-                      className="h-1 bg-primary-500 rounded-full ml-9"
-                    />
-                  )}
-                </motion.div>
-              );
-            })}          </motion.div>
-          
-          {isComplete && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-green-500 font-medium"
+          {steps.map((step, index) => (
+            <div 
+              key={step.id} 
+              className="z-10 flex flex-col items-center"
             >
-              Анализ завершен! Переход к результатам...
+              <div 
+                className={`w-8 h-8 rounded-full flex items-center justify-center mb-2
+                  ${step.active ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'}`}
+              >
+                {step.active ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                ) : (
+                  <span>{step.id}</span>
+                )}
+              </div>
+              <span className={`text-sm ${step.active ? 'text-blue-500 font-medium' : 'text-gray-500'}`}>
+                {step.name}
+              </span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Analyzing image */}
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <img 
+            src={AnalyzingImage} 
+            alt="Анализ автомобиля" 
+            className="max-w-md mx-auto"
+          />
+        </motion.div>
+
+        {/* Progress bar */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <div className="w-full h-2 bg-gray-200 rounded-full mb-2">
+            <div 
+              className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <div className="text-right font-semibold text-blue-600">
+            {progress} %
+          </div>
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={index}
+              className="p-6 border border-gray-100 rounded-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+            >
+              {index === 0 && (
+                <svg className="w-12 h-12 mx-auto mb-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                  <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                </svg>
+              )}
+              {index === 1 && (
+                <svg className="w-12 h-12 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+              )}
+              {index === 2 && (
+                <svg className="w-12 h-12 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              )}
+              <p className="text-sm text-gray-500">{stat.label}</p>
+              {stat.value && <p className="font-semibold mt-1">{stat.value}</p>}
             </motion.div>
-          )}
+          ))}
         </div>
-      </PageTransition>
+      </div>
     </Layout>
   );
 };

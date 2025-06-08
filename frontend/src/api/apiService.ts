@@ -1,5 +1,12 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import config from '../config/config';
+import type { 
+  CreateAnalysisRequest,
+  CarParameters,
+  CreateAnalysisResponse,
+  PhotoPosition,
+  AnalysisResponse
+} from '../types/api.types';
 
 /**
  * API Service for interacting with the backend
@@ -28,18 +35,45 @@ class ApiService {
     );
   }
   /**
+   * Create analyse for a VIN number
+   * @param vin - Vehicle Identification Number
+   * @returns Analysis ID and car parameters
+   */
+  async createAnalyse(vin: string): Promise<AxiosResponse<CreateAnalysisResponse>> {
+    const data: CreateAnalysisRequest = { vin };
+    return this.api.post('/create_analyse', data);
+  }
+
+  /**
+   * Change analyse parameters
+   * @param analyseId - Analysis ID
+   * @param carParams - Updated car parameters
+   */
+  async changeParams(analyseId: number, carParams: CarParameters): Promise<AxiosResponse> {
+    return this.api.post(`/change_params?analyse_id=${analyseId}`, carParams);
+  }
+
+  /**
    * Upload car photos
+   * @param analyseId - Analysis ID
    * @param files - The car photo files to upload
+   * @param positions - Array of positions for each photo
    * @param onUploadProgress - Callback for tracking upload progress
    */
   async uploadPhotos(
+    analyseId: number,
     files: File[],
+    positions: PhotoPosition[],
     onUploadProgress?: (progressEvent: any) => void
   ): Promise<AxiosResponse> {
     const formData = new FormData();
-    
-    files.forEach((file, index) => {
-      formData.append(`photo_${index}`, file);
+
+    files.forEach((file) => {
+      formData.append('photos', file);
+    });
+
+    positions.forEach((position) => {
+      formData.append('positions', position);
     });
 
     const options: AxiosRequestConfig = {
@@ -49,27 +83,15 @@ class ApiService {
       onUploadProgress,
     };
 
-    return this.api.post('/upload', formData, options);
+    return this.api.post(`/upload?analyse_id=${analyseId}`, formData, options);
   }
 
   /**
-   * Analyze car damage
-   * @param sessionId - Session ID from the upload response
+   * Get analysis results
+   * @param analyseId - Analysis ID
    */
-  async analyzeDamage(sessionId: string): Promise<AxiosResponse> {
-    return this.api.post('/analyze', { sessionId });
-  }
-
-  /**
-   * Get repair cost estimate
-   * @param analysisId - Analysis ID from the analysis response
-   * @param region - Region for the cost estimate
-   */
-  async getRepairCostEstimate(
-    analysisId: string,
-    region: string
-  ): Promise<AxiosResponse> {
-    return this.api.post('/repairs', { analysisId, region });
+  async getAnalyse(analyseId: number): Promise<AxiosResponse<AnalysisResponse>> {
+    return this.api.get(`/analyse?analyse_id=${analyseId}`);
   }
 }
 
