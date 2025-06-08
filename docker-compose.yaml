@@ -36,14 +36,14 @@ services:
 #    restart: unless-stopped
 
 
-#  frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - backend
-#    ports:
-#      - "8080:80"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
 
 #  vin-microservice:
 #    build:
