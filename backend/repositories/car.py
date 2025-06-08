@@ -64,13 +64,45 @@ class CarRepository:
     async def _send_to_neural(cls, image_path: str) -> Dict:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
+                # Читаем файл в бинарном режиме
                 with open(image_path, "rb") as file:
-                    files = {"file": (Path(image_path).name, file, "image/jpeg")}
-                    response = await client.post(cls.NEURAL_API_URL, files=files)
+                    files = {
+                        "file": (os.path.basename(image_path), file, "image/jpeg")
+                    }
+                    
+                    # Добавляем логирование для отладки
+                    print(f"Sending file to neural: {image_path}")
+                    
+                    response = await client.post(
+                        cls.NEURAL_API_URL,
+                        files=files,
+                        headers={"Accept": "application/json"}
+                    )
+                    
+                    # Логируем ответ
+                    print(f"Neural API response status: {response.status_code}")
+                    
                     response.raise_for_status()
                     return response.json()
+                    
+        except httpx.ConnectError as e:
+            print(f"Connection error to neural API: {str(e)}")
+            raise HTTPException(
+                status_code=502,
+                detail="Невозможно подключиться к сервису анализа изображений"
+            )
+        except httpx.ReadTimeout as e:
+            print(f"Timeout error: {str(e)}")
+            raise HTTPException(
+                status_code=504,
+                detail="Таймаут при обработке изображения"
+            )
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Neural API error: {str(e)}")
+            print(f"Unexpected error: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка при анализе изображения: {str(e)}"
+            )
     
     @classmethod
     def _ensure_upload_dir_exists(cls):
@@ -80,17 +112,10 @@ class CarRepository:
     @classmethod
     async def create_analyse(cls, vin: str) -> int:
         async with new_session() as session:
-            # Получаем данные из ГИБДД API
-            gibdd_data = await cls._get_gibdd_data(vin)
-            
-            # Создаем запись анализа
+            # Просто создаем запись анализа без запроса к ГИБДД
             analyse = CarAnalysisOrm(vin=vin)
             session.add(analyse)
             await session.flush()
-            
-            # Сохраняем метаданные из ГИБДД
-            await cls._save_gibdd_metadata(session, analyse.id, gibdd_data)
-            
             await session.commit()
             return analyse.id
     
@@ -200,22 +225,34 @@ class CarRepository:
     
     @classmethod
     async def upload_images(cls, analyse_id: int, images_data: list[tuple[bytes, str, str]]) -> bool:
-        cls._ensure_upload_dir_exists()
-        
-        analyse_dir = os.path.join(cls.UPLOAD_DIR, str(analyse_id))
-        os.makedirs(analyse_dir, exist_ok=True)
-        
-        for image_data, position, filename in images_data:
-            # Создаем подпапку для позиции, если её нет
-            position_dir = os.path.join(analyse_dir, position)
-            os.makedirs(position_dir, exist_ok=True)
-            
-            # Сохраняем файл с уникальным именем
-            file_path = os.path.join(position_dir, filename)
-            with open(file_path, "wb") as f:
-                f.write(image_data)
-        
-        return True
+        try:
+            cls._ensure_upload_dir_exists()
+            analyse_dir = os.path.join(cls.UPLOAD_DIR, str(analyse_id))
+            os.makedirs(analyse_dir, exist_ok=True)
+
+            for image_data, position, filename in images_data:
+                position_dir = os.path.join(analyse_dir, position)
+                os.makedirs(position_dir, exist_ok=True)
+                
+                file_path = os.path.join(position_dir, filename)
+                
+                # Проверяем расширение файла
+                if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    raise ValueError(f"Неподдерживаемый формат файла: {filename}")
+                    
+                # Сохраняем файл с проверкой
+                try:
+                    with open(file_path, "wb") as f:
+                        f.write(image_data)
+                except IOError as e:
+                    raise ValueError(f"Ошибка сохранения файла {filename}: {str(e)}")
+
+            return True
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка при загрузке изображений: {str(e)}"
+            )
     
     
     @classmethod
@@ -343,3 +380,26 @@ class CarRepository:
                 session.add(defect_orm)
         
         await session.commit()
+        
+        
+    @classmethod
+    async def _get_test_defects(cls):
+        """Возвращает тестовые данные, если нейросеть недоступна"""
+        return {
+            "report": [
+                {
+                    "car_part": "Front-door",
+                    "confidence": 0.89,
+                    "defect_type": "Dent",
+                    "severity": 4.5
+                },
+                {
+                    "car_part": "Front-bumper",
+                    "confidence": 0.76,
+                    "defect_type": "Scratch",
+                    "severity": 0.1
+                }
+            ],
+            "total_defects": 2,
+            "processing_time_ms": 1250.5
+        }

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Any
 from datetime import datetime
 
 
@@ -53,4 +53,5 @@ class SVinCheckData(BaseModel):
 class SCreateAnalyseResponse(BaseModel):
     success: bool
     analyse_id: int
-    vin_check_data: SVinCheckData
+    vin_check_data: Dict[str, Any]
+    full_gibdd_data: Dict[str, Any] | None = None
