@@ -9,7 +9,7 @@ const VinEntryPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (vin.trim().length < 5) {
+    if (vin.trim().length < 1) {
       alert('Пожалуйста, введите корректный VIN номер');
       return;
     }

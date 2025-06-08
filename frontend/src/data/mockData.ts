@@ -64,6 +64,21 @@ export const mockAnalysisResponse: Analysis = {
       quality: 4,
       defects: ['Scratch', 'Dent'],
       detailed: ['Царапина/Скол']
+    },
+    '1': {
+      quality: 4,
+      defects: ['Scratch', 'Dent'],
+      detailed: ['Царапина/Скол']
+    },
+    '2': {
+      quality: 4,
+      defects: ['Scratch', 'Dent'],
+      detailed: ['Царапина/Скол']
+    },
+    '3': {
+      quality: 4,
+      defects: ['Scratch', 'Dent'],
+      detailed: ['Царапина/Скол']
     }
   },
   created_at: new Date().toISOString()
@@ -73,7 +88,7 @@ export const mockAnalysisResponse: Analysis = {
  * Get mock overall assessment
  */
 export const mockOverallAssessment: Analysis = {
-    quality: 0.87,
+    quality: 4,
     car_parts: {
       'Right-Back-door': {
         quality: 1,
@@ -89,7 +104,22 @@ export const mockOverallAssessment: Analysis = {
         quality: 4,
         defects: ['Scratch', 'Dent'],
         detailed: ['Сильная царапина', 'Скол']
-      }
+      },
+      'Left-Front-door': {
+        quality: 3,
+        defects: ['Dent'],
+        detailed: ['Средняя вмятина']
+      },
+      'Left-Front-wheel': {
+        quality: 0,
+        defects: [],
+        detailed: []
+      },
+      'Left-Back-wheel': {
+        quality: 0,
+        defects: [],
+        detailed: []
+      },
     },
     created_at: new Date().toISOString()
 };

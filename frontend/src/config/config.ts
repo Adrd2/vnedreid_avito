@@ -23,7 +23,7 @@ interface Config {
  * Default configuration values
  */
 const defaultConfig: Config = {
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'http://localhost:8000/api',
   environment: 'development',
   debug: true,
 };
@@ -32,7 +32,7 @@ const defaultConfig: Config = {
  * Production configuration values
  */
 const prodConfig: Config = {
-  apiUrl: 'https://api.autocheck.ai/api',
+  apiUrl: 'http://localhost:8000/api',
   environment: 'production',
   debug: false,
 };
