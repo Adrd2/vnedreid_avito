@@ -61,8 +61,44 @@ class CarRepository:
         # Коэффициенты серьезности по типам повреждений
     
     @classmethod
-    async def _get_test_defects(cls):
-        """Возвращает тестовые данные, если нейросеть недоступна"""
+    async def _send_to_neural(cls, image_path: str) -> Dict:
+        """
+        Отправляет изображение в нейросеть для анализа.
+        В случае ошибки возвращает моковые данные.
+        """
+        try:
+            # Проверяем существование файла
+            if not os.path.exists(image_path):
+                print(f"File not found: {image_path}")
+                return cls._get_test_defects()
+
+            # Подготавливаем файл для отправки
+            file_name = os.path.basename(image_path)
+            with open(image_path, "rb") as file:
+                files = {'file': (file_name, file, 'image/jpeg')}
+                
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    print(f"Sending to neural: {file_name}")
+                    response = await client.post(
+                        cls.NEURAL_API_URL,
+                        files=files,
+                        headers={'Accept': 'application/json'}
+                    )
+                    
+                    if response.status_code != 200:
+                        print(f"Neural API error: {response.status_code} - {response.text}")
+                        return cls._get_test_defects()
+                    
+                    return response.json()
+                    
+        except Exception as e:
+            print(f"Error sending to neural: {str(e)}")
+            return cls._get_test_defects()
+
+
+    @classmethod
+    def _get_test_defects(cls) -> Dict:
+        """Генерирует тестовые данные о дефектах"""
         return {
             "report": [
                 {
@@ -76,56 +112,18 @@ class CarRepository:
                     "confidence": 0.76,
                     "defect_type": "Scratch",
                     "severity": 0.1
+                },
+                {
+                    "car_part": "Hood",
+                    "confidence": 0.92,
+                    "defect_type": "Paint chip",
+                    "severity": 2.3
                 }
             ],
-            "total_defects": 2,
+            "total_defects": 3,
             "processing_time_ms": 1250.5
         }
-        
     
-    @classmethod
-    async def _send_to_neural(cls, image_path: str) -> Dict:
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                # Читаем файл в бинарном режиме
-                with open(image_path, "rb") as file:
-                    files = {
-                        "file": (os.path.basename(image_path), file, "image/jpeg")
-                    }
-                    
-                    # Добавляем логирование для отладки
-                    print(f"Sending file to neural: {image_path}")
-                    
-                    response = await client.post(
-                        cls.NEURAL_API_URL,
-                        files=files,
-                        headers={"Accept": "application/json"}
-                    )
-                    
-                    # Логируем ответ
-                    print(f"Neural API response status: {response.status_code}")
-                    
-                    response.raise_for_status()
-                    return response.json()
-                    
-        except httpx.ConnectError as e:
-            print(f"Connection error to neural API: {str(e)}")
-            raise HTTPException(
-                status_code=502,
-                detail="Невозможно подключиться к сервису анализа изображений"
-            )
-        except httpx.ReadTimeout as e:
-            print(f"Timeout error: {str(e)}")
-            raise HTTPException(
-                status_code=504,
-                detail="Таймаут при обработке изображения"
-            )
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Ошибка при анализе изображения: {str(e)}"
-            )
     
     @classmethod
     def _ensure_upload_dir_exists(cls):
@@ -280,22 +278,6 @@ class CarRepository:
     
     @classmethod
     async def analyse(cls, analyse_id: int) -> SAnalyseResult:
-        try:
-            async with httpx.AsyncClient() as client:
-                healthcheck = await client.get(
-                    "http://localhost:4070/api/v1/healthcheck",
-                    timeout=5.0
-                )
-                if healthcheck.status_code != 200:
-                    raise HTTPException(
-                        status_code=503,
-                        detail="Сервис анализа изображений недоступен"
-                    )
-        except Exception as e:
-            raise HTTPException(
-                status_code=503,
-                detail=f"Не удалось проверить статус сервиса анализа: {str(e)}"
-            )
         async with new_session() as session:
             # Получаем анализ из БД
             query = select(CarAnalysisOrm).where(CarAnalysisOrm.id == analyse_id)
@@ -320,9 +302,8 @@ class CarRepository:
                     for image_file in os.listdir(position_dir):
                         image_path = os.path.join(position_dir, image_file)
                         
-                        # Отправляем изображение в нейросеть
-                        #neural_response = await cls._send_to_neural(image_path)
-                        neural_response = await cls._get_test_defects()
+                        # Отправляем изображение в нейросеть (или получаем мок)
+                        neural_response = await cls._send_to_neural(image_path)
                         
                         # Обрабатываем каждый дефект
                         for defect in neural_response.get("report", []):
@@ -331,16 +312,12 @@ class CarRepository:
                             severity = defect["severity"] / 5  # Нормализуем severity (0-1)
                             confidence = defect["confidence"]
                             
-                            # Получаем коэффициенты
                             damage_weight = DAMAGE_WEIGHTS.get(defect_type, 1.0)
                             part_weight = PART_WEIGHTS.get(part_type, 1.0)
                             
-                            # Рассчитываем ущербность дефекта
-                            # Используем severity как площадь повреждения (поскольку нет точных данных)
                             damage_score = damage_weight * part_weight * severity * confidence
                             total_damage_score += damage_score
                             
-                            # Сохраняем данные по детали
                             if part_type not in car_parts:
                                 car_parts[part_type] = {
                                     "quality": 5.0,
@@ -364,21 +341,15 @@ class CarRepository:
                         
                         processed_images += 1
 
-            # Рассчитываем финальную оценку состояния (0-4)
+            # Рассчитываем финальную оценку
             condition_score = max(0.0, 4 - 4 * (total_damage_score / MAX_DAMAGE_SCORE))
             condition_score = round(condition_score, 2)
             
             # Рассчитываем качество для каждой детали
             for part_data in car_parts.values():
-                # Нормализуем ущерб детали (0-1)
                 normalized_damage = min(1.0, part_data["total_damage"] / (MAX_DAMAGE_SCORE / len(car_parts)))
-                # Переводим в качество (0-5)
                 part_data["quality"] = max(0.0, 5 - 5 * normalized_damage)
                 part_data["quality"] = round(part_data["quality"], 1)
-                
-                # TODO: Можно добавить расчет стоимости ремонта для каждой детали
-                # repair_cost = part_data["total_damage"] * COST_FACTOR.get(part_type, 1.0)
-                # part_data["repair_cost_estimate"] = repair_cost
 
             # Сохраняем результаты в БД
             await cls._save_analysis_results(session, analyse_id, car_parts, condition_score)
@@ -387,7 +358,7 @@ class CarRepository:
                 quality=condition_score,
                 car_parts=car_parts,
                 created_at=analyse.created_at,
-                total_damage_score=total_damage_score  # Можно добавить в схему
+                total_damage_score=total_damage_score
             )
     
     

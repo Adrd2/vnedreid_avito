@@ -137,6 +137,7 @@ async def create_analyse(analyse_data: SCreateAnalyse):
         
         return {
             "success": True,
+            "vin": analyse_data.vin,
             "analyse_id": analyse_id,
             "vin_check_data": {
                 "brand": "MockCar",
